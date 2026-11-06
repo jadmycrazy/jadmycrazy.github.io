@@ -1,0 +1,128 @@
+<title>Jad Almajnouni</title>
+{{HEAD}}
+<meta name="description" content="Jad Almajnouni: biomedical engineering at Duke. Optimization and simulation models for transplantation, infectious disease and radiation oncology.">
+<style>
+  .hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 40px; align-items: center; padding-block: 64px 40px; }
+  .hero h1 { font-size: clamp(2.6rem, 8vw, 5.4rem); font-stretch: 122%; }
+  .hero .lead { font-size: clamp(1.2rem, 2.2vw, 1.45rem); line-height: 1.45; margin-top: 26px; max-width: 34ch; color: var(--ink); }
+  .hero .sub { color: var(--ink-2); margin-top: 18px; max-width: 52ch; }
+  .hero-fig { min-width: 0; }
+  .hero-fig .cap { font-family: var(--font-display); font-size: 0.8rem; color: var(--ink-3); margin-top: 6px; text-align: center; }
+  .links { display: flex; gap: 18px; flex-wrap: wrap; font-family: var(--font-display); font-size: 0.95rem; margin-top: 26px; }
+  @media (max-width: 760px) { .hero { grid-template-columns: 1fr; padding-top: 40px; } .hero-fig { max-width: 360px; } }
+  .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; border-top: 2px solid var(--ink); padding-top: 14px; margin-top: 56px; }
+  .sec-head h2 { margin: 0; }
+  .plate { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 32px; padding-block: 32px; border-bottom: 1px solid var(--rule); text-decoration: none; color: inherit; }
+  .plate:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+  .plate .thumb { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 10px 4px; min-width: 0; }
+  .plate .thumb .t { font-family: var(--font-display); font-size: 0.72rem; color: var(--ink-3); margin: 0 4px 2px; }
+  .plate h3 { font-size: 1.35rem; font-stretch: 108%; margin: 6px 0 10px; line-height: 1.2; }
+  .plate p { color: var(--ink-2); margin-bottom: 12px; }
+  .plate .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--font-display); font-size: 0.82rem; color: var(--ink-3); }
+  .plate .meta b { color: var(--ink-2); font-weight: 600; }
+  .plate .text { min-width: 0; }
+  @media (max-width: 760px) { .plate { grid-template-columns: 1fr; gap: 18px; } }
+  .xp { margin-top: 8px; }
+  .xp-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 32px; padding-block: 22px; border-bottom: 1px solid var(--rule); }
+  .xp-row .when { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-3); padding-top: 4px; }
+  .xp-row h3 { margin: 0; font-size: 1.08rem; }
+  .xp-row .role { font-family: var(--font-display); font-size: 0.92rem; color: var(--ink-2); margin-top: 3px; }
+  .xp-row p { color: var(--ink-2); font-size: 1rem; margin: 8px 0 0; max-width: 62ch; }
+  @media (max-width: 640px) { .xp-row { grid-template-columns: 1fr; } }
+  .email { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); }
+  .email button { font: inherit; font-size: 0.8rem; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+  .bg { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px 40px; margin-top: 24px; }
+  .bg > div { min-width: 0; }
+  .bg h3 { margin: 6px 0 6px; font-size: 1.05rem; }
+  .bg p { color: var(--ink-2); font-size: 1rem; margin-bottom: 0.4em; }
+</style>
+</head><body>
+{{BAR}}
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Biomedical Engineering + Computer Science · Duke University</div>
+      <h1 style="margin-top:16px">Jad Almajnouni</h1>
+      <p class="lead">I build optimization and simulation models for medical decisions: who gets matched for a kidney, how to dose an antibiotic, how to split a course of radiation.</p>
+      <p class="sub">First-year BME and CS student at Duke and an undergraduate researcher in the Tomaras Lab at the Duke Human Vaccine Institute. Before Duke, I studied antibody responses in pancreatic cancer at the Ragon Institute of Mass General Brigham, MIT, and Harvard.</p>
+      <div class="links"><a href="#projects">Projects</a><a href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn</a><a href="https://github.com/jadmycrazy">GitHub</a><span class="email"><span class="mono" id="emailText">jad.almajnouni@duke.edu</span><button type="button" id="copyEmail">Copy</button></span></div>
+    </div>
+    <div class="hero-fig">
+      <div class="chart" id="heroNet"></div>
+      <div class="cap">36 incompatible donor-patient pairs. Green cycles: the transplants an integer program picks.</div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="sec-head"><h2>Projects</h2><span class="label">Optimization, simulation, medicine</span></div>
+
+    <a class="plate" href="kidney.html">
+      <div class="thumb"><div class="t">Share of pairs matched vs. pool size</div><div class="chart" id="t1"></div></div>
+      <div class="text">
+        <div class="eyebrow">01 · Transplantation</div>
+        <h3>Kidney exchange: how many transplants is an optimizer worth?</h3>
+        <p>Simulates kidney paired-donation pools with the Saidman generator and chooses exchange cycles with an integer program. In pools of 100 pairs the optimizer matched 55% of patients against 43% for a first-come matcher, 30% more transplants with no new donors. Blood type O patients were matched at a third of the rate of type A.</p>
+        <div class="meta"><span><b>Methods</b> cycle-formulation MILP (HiGHS), DFS cycle search, Monte Carlo pools</span><span>Interactive figure</span></div>
+      </div>
+    </a>
+
+    <a class="plate" href="antibiotic.html">
+      <div class="thumb"><div class="t">Least drug that clears infection vs. immune strength</div><div class="chart" id="t2"></div></div>
+      <div class="text">
+        <div class="eyebrow">02 · Infectious disease</div>
+        <h3>Dosing antibiotics with the immune system in the loop</h3>
+        <p>A PK/PD model with sensitive and resistant bacteria and a saturating innate immune response. Searching 1,000 regimens, a working immune system cut the drug needed for safe clearance 12-fold, and the requirement jumped 4.6-fold between 80% and 60% immune strength.</p>
+        <div class="meta"><span><b>Methods</b> ODE model, RK4 integration, regimen grid search, mutant selection window</span><span>In-browser simulator</span></div>
+      </div>
+    </a>
+
+    <a class="plate" href="radiotherapy.html">
+      <div class="thumb"><div class="t">Head and neck: tumor BED vs. number of fractions</div><div class="chart" id="t3"></div></div>
+      <div class="text">
+        <div class="eyebrow">03 · Radiation oncology</div>
+        <h3>How many fractions? Choosing a radiotherapy schedule with the linear-quadratic model</h3>
+        <p>Maximizes tumor dose at a fixed limit on late healthy-tissue damage. The optimizer recovers the direction of recent practice: about 6 large fractions for prostate, near-indifference for breast, and a 16-fraction head and neck course that finishes before tumor repopulation begins.</p>
+        <div class="meta"><span><b>Methods</b> LQ model, constrained optimization, analytical boundary check</span><span>Interactive figure</span></div>
+      </div>
+    </a>
+  </section>
+
+  <section id="background">
+    <div class="sec-head"><h2>Experience</h2><span class="label">Research, education, honors</span></div>
+    <div class="xp">
+      <div class="xp-row"><div class="when num">Oct 2026 – now</div><div><h3>Tomaras Lab, Duke Human Vaccine Institute</h3><div class="role">Undergraduate Student Researcher</div><p>Research in the lab of Dr. Georgia Tomaras at the Duke Human Vaccine Institute and the Duke Center for Human Systems Immunology, which studies the mechanisms of protective immune responses.</p></div></div>
+      <div class="xp-row"><div class="when num">Jun – Aug 2025</div><div><h3>Ragon Institute of Mass General Brigham, MIT, and Harvard</h3><div class="role">Research Intern, through MIT's Research Science Institute</div><p>Immunology research on pancreatic cancer. Analyzed antibody responses with systems serology and presented the findings at the RSI symposium at MIT.</p></div></div>
+      <div class="xp-row"><div class="when num">2026 – 2030</div><div><h3>Duke University, Pratt School of Engineering</h3><div class="role">B.S.E. Biomedical Engineering and Computer Science</div></div></div>
+      <div class="xp-row"><div class="when">Honors</div><div><h3>KAUST Gifted Student Program (KGSP) Scholar</h3><div class="role">2026 – present</div><h3 style="margin-top:14px">Research Science Institute (RSI) Scholar</h3><div class="role">2025 · one of 36 international students selected</div></div></div>
+      <div class="xp-row"><div class="when">Tools</div><div><p>Integer and constrained optimization (HiGHS), ODE simulation, Monte Carlo methods, systems serology data analysis. Python (NumPy, SciPy), R, JavaScript for interactive figures.</p></div></div>
+    </div>
+  </section>
+</main>
+{{FOOT}}
+<script src="assets/charts.js"></script>
+<script src="assets/kidney-net.js"></script>
+<script>
+(async function () {
+  const { line, css } = Charts;
+  const [K, A, R] = await Promise.all(["kidney", "antibiotic", "radiotherapy"].map((n) => fetch("data/" + n + ".json").then((r) => r.json())));
+  function draw() {
+    drawPool(document.getElementById("heroNet"), K.examples[0], "opt3", { aria: "Example kidney exchange pool with optimal cycles" });
+    const small = { height: 170, margin: { t: 8, l: 40, b: 26 } };
+    line(document.getElementById("t1"), Object.assign({}, small, { margin: { t: 8, l: 40, b: 26, r: 70 }, direct: true,
+      series: [["opt3", "Optimal", "--s1"], ["greedy3", "First-come", "--s2"]].map(([k, n, c]) => ({ name: n, color: css(c), pts: K.sizes.map((r) => [r.n, r[k] * 100]), fmt: (v) => v.toFixed(1) + "%" })),
+      x: { min: 0, max: 200, ticks: [0, 100, 200] }, y: { min: 0, max: 70, ticks: [0, 35, 70], fmt: (v) => v + "%" }, tipX: (x) => Math.round(x) + " pairs" }));
+    line(document.getElementById("t2"), Object.assign({}, small, {
+      series: [{ name: "Total drug", color: css("--s1"), pts: A.sweep.map((s) => [s.frac * 100, s.total]), dots: A.sweep.map((s) => [s.frac * 100, s.total]), fmt: (v) => v.toLocaleString() + " mg" }],
+      x: { min: 0, max: 100, ticks: [0, 50, 100], fmt: (v) => v + "%" }, y: { min: 0, max: 12000, ticks: [0, 6000, 12000], fmt: (v) => v / 1000 + "k" }, tipX: (x) => Math.round(x / 20) * 20 + "% immune" }));
+    const hn = R.sites.find((s) => s.site.startsWith("Head"));
+    line(document.getElementById("t3"), Object.assign({}, small, {
+      series: [{ name: "Tumor BED", color: css("--s1"), pts: hn.curve.filter((c) => c.ok).map((c) => [c.n, c.bed]), dots: [[hn.best.n, hn.best.bed]], fmt: (v) => v.toFixed(1) + " Gy" }],
+      x: { min: 1, max: 40, ticks: [1, 16, 40] }, y: { min: 60, max: 90, ticks: [60, 75, 90] }, tipX: (x) => Math.round(x) + " fractions" }));
+  }
+  draw(); Charts.rerenderOnTheme(draw);
+  const cb = document.getElementById("copyEmail");
+  cb.onclick = async () => { try { await navigator.clipboard.writeText("jad.almajnouni@duke.edu"); cb.textContent = "Copied"; } catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById("emailText")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); cb.textContent = "Selected"; } setTimeout(() => (cb.textContent = "Copy"), 1600); };
+  Charts.onResize(draw).observe(document.getElementById("t1"));
+})();
+</script>
+</body></html>
