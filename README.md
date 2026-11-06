@@ -1,4 +1,4 @@
-# Portfolio site
+# jadmycrazy.github.io
 
 Source for my personal site: three project write-ups with interactive figures, built from plain HTML, CSS and a small SVG chart library.
 
@@ -6,6 +6,6 @@ Source for my personal site: three project write-ups with interactive figures, b
 - `assets/` stylesheet, chart helpers, kidney-pool renderer
 - `data/` figure data exported by the project repos
 
-Build with `python build.py`. The `netlify/` output deploys as a static site.
+Build with `python build.py`, then copy `netlify/` to `docs/`. GitHub Pages serves `docs/` at https://jadmycrazy.github.io.
 
 Projects: [kidney-exchange-optimizer](https://github.com/jadmycrazy/kidney-exchange-optimizer) · [antibiotic-immune-dosing](https://github.com/jadmycrazy/antibiotic-immune-dosing) · [radiotherapy-fractionation](https://github.com/jadmycrazy/radiotherapy-fractionation)
