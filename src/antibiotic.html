@@ -1,0 +1,179 @@
+<title>Antibiotic Dosing Model · Jad Almajnouni</title>
+{{HEAD}}
+<meta name="description" content="A pharmacokinetic and immune model that searches 1,000 antibiotic regimens for the least drug that clears an infection without selecting resistance.">
+</head><body>
+{{BAR}}
+<main class="wrap">
+  <header class="article-head">
+    <div class="eyebrow">Project 02 · Simulation · Infectious disease</div>
+    <h1>Dosing antibiotics with the immune system in the loop</h1>
+    <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/antibiotic-immune-dosing">Code on GitHub</a></span><span>Python · ODE modeling</span></div>
+    <p class="dek">Most dosing models treat the drug as the only thing killing bacteria. I added a simple innate immune response and a resistant subpopulation, then searched 1,000 regimens for the least drug that clears the infection without letting resistance take hold.</p>
+  </header>
+
+  <section class="findings" aria-label="Key results">
+    <div class="finding"><div class="big">12×</div><div class="what">more drug needed to clear the infection when immune killing is removed</div></div>
+    <div class="finding"><div class="big">60–80%</div><div class="what">immune strength where the required dose jumps 4.6-fold</div></div>
+    <div class="finding"><div class="big">1×/day</div><div class="what">dosing used the least total drug at every immune level tested</div></div>
+  </section>
+
+  <figure class="fig" id="fig-sim">
+    <div class="fig-head"><div class="fig-title">Figure 1. Simulate a 7-day course</div><span class="label">Interactive · runs in your browser</span></div>
+    <div class="controls">
+      <div class="control"><label for="dose">Dose <output id="doseOut"></output></label><input id="dose" type="range" min="20" max="2000" step="20" value="120"></div>
+      <div class="control"><label for="imm">Immune strength <output id="immOut"></output></label><input id="imm" type="range" min="0" max="100" step="5" value="100"></div>
+      <div><div class="label" style="margin-bottom:6px">Every</div><div class="seg" role="group" aria-label="Dosing interval" id="tauSeg"></div></div>
+    </div>
+    <div class="readout" id="simStatus"></div>
+    <div class="fig-title" style="margin-top:18px;font-size:.9rem">Drug concentration, mg/L</div>
+    <div class="chart" id="concChart"></div>
+    <div class="fig-title" style="margin-top:10px;font-size:.9rem">Bacteria</div>
+    <div class="legend" id="bactLegend"></div>
+    <div class="chart" id="bactChart"></div>
+    <figcaption><b>The shaded band is the mutant selection window</b>: concentrations high enough to kill sensitive bacteria but too low to kill resistant mutants. Try 40 mg every 24 hours: the drug sits in the window, sensitive cells die, and resistant cells take over. The simulator is the same RK4 integrator used for the analysis.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>The problem</h2>
+    <p>A dosing regimen has to do two things. It has to kill enough bacteria to end the infection, and it has to avoid the concentration range where resistant mutants have the advantage. Sensitive bacteria die at lower concentrations than resistant ones, so a dose that is strong enough to kill the sensitive population but too weak to touch the mutants clears out the mutants' competition. Drlica called this range the mutant selection window.</p>
+    <p>The usual answer is to dose high enough to stay above the window. But the drug is not working alone. Neutrophils and macrophages kill bacteria too, and they are most effective when the bacterial population is small. Ankomah and Levin (2014) showed in models that this changes the dosing problem: the drug only has to push the population down to where the immune system can finish the job. I wanted to measure how much drug that saves, and what happens as the immune response weakens, as it does in patients on chemotherapy.</p>
+
+    <h2>Model</h2>
+    <p>Two bacterial populations grow toward a shared carrying capacity: sensitive cells S, and resistant cells R that grow 10% slower (a fitness cost). Sensitive cells mutate into resistant ones at 10<sup>-8</sup> per division. The drug kills each population with a Hill function, with the resistant EC50 sixteen times higher. The immune system kills at a rate that saturates as bacteria multiply, so it can control a small population and is overwhelmed by a large one.</p>
+    <div class="eq">dS/dt = g·S·(1 − N/K) − E(C; EC50_S)·S − I(N)·S − mutation
+dR/dt = (1 − cost)·g·R·(1 − N/K) − E(C; EC50_R)·R − I(N)·R + mutation
+E(C)  = Emax·C^h / (EC50^h + C^h)        I(N) = k_imm / (1 + N/K_imm)
+C(t)  = Σ_doses (dose/V)·exp(−k_e (t − t_i))     half-life 2 h, V = 20 L</div>
+    <p>The infection starts at 10<sup>7</sup> sensitive cells and 1 resistant cell. Without treatment it grows to 10<sup>9</sup> and stays there, so the immune response alone can't clear it. A course counts as successful if all bacteria are gone at day 7 and the resistant population never grew past 1,000 cells. I integrate with fixed-step fourth-order Runge-Kutta (0.01 h steps) and treat any population below one cell as extinct.</p>
+    <p>The parameters are illustrative. I chose them to sit in realistic ranges for a fast-growing bacterium and a concentration-dependent drug, but they are not fitted to a specific pathogen. The results that matter are the shapes and ratios, not the milligram values.</p>
+
+    <h2>Searching regimens</h2>
+    <p>I simulated every combination of 100 doses (20 to 2,000 mg) and five intervals (every 4, 6, 8, 12 or 24 hours), with and without the immune response. That is 1,000 simulations. Then, for six levels of immune strength from 100% down to 0%, I found the regimen with the least total drug that still succeeded.</p>
+  </article>
+
+  <figure class="fig" id="fig-map">
+    <div class="fig-head"><div class="fig-title">Figure 2. Outcome of every regimen</div></div>
+    <div class="legend" id="mapLegend"></div>
+    <div class="label" style="margin-top:14px">With immune response</div>
+    <div class="chart" id="mapImm"></div>
+    <div class="label" style="margin-top:10px">Without immune response</div>
+    <div class="chart" id="mapNo"></div>
+    <figcaption><b>Without immunity, a wide band of doses selects for resistance.</b> Each cell is one 7-day simulation. The ringed cell is the regimen with the least total drug that succeeds. With immunity it is 120 mg once a day; without, 1,480 mg once a day.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>Results</h2>
+    <p>With a working immune response, 120 mg once a day for a week (840 mg in total) cleared the infection without resistant growth. Without the immune response, the cheapest successful regimen was 1,480 mg once a day, or 10,360 mg in total. The immune system cut the required drug by a factor of 12.</p>
+    <p>The danger zone also moved. Without immunity, every daily dose from 40 to 1,460 mg failed with resistance. The drug cleared the sensitive population, and the surviving mutants grew back. With immunity, only doses up to 100 mg failed, because once the drug knocked the total population down, the immune response killed the remaining mutants before they could expand.</p>
+  </article>
+
+  <figure class="fig" id="fig-sweep">
+    <div class="fig-head"><div class="fig-title">Figure 3. Least total drug that succeeds, by immune strength</div></div>
+    <div class="chart" id="sweepChart"></div>
+    <figcaption><b>The required dose doesn't rise smoothly as immunity weakens.</b> It stays low down to 80% strength, then jumps 4.6-fold by 60%. Immune strength is the maximum innate kill rate as a share of the baseline. Total drug is summed over the 7-day course.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <p>The response to weaker immunity has a cliff. At 80% immune strength the cheapest regimen needed 980 mg; at 60% it needed 4,480 mg. Above the cliff, a modest dose pushes bacteria below the level where the immune response is saturated, and the immune system takes over. Below it, the immune system can't keep up even with a small population, so the drug has to do nearly all the work. In clinical terms this is an argument for dosing immunocompromised patients differently, not just a bit more.</p>
+    <p>Once-daily dosing used the least total drug at every immune level. Without immunity, the cheapest regimen given every 4 hours used 25,200 mg in the week, more than twice the once-daily amount. Because killing in this model depends on concentration, one high peak does more than several small ones. That matches the clinical move toward once-daily aminoglycoside dosing in the 1990s, which relied on the same property. It would not hold for a drug whose killing depends on time above the MIC, like a beta-lactam, and the model could test that by lowering the Hill coefficient.</p>
+
+    <h2>What this leaves out</h2>
+    <ul>
+      <li><b>Randomness.</b> Mutation and extinction are random events at small population sizes. A stochastic version would give the probability of resistance for each regimen, not a yes or no.</li>
+      <li><b>Real parameters.</b> Fitting the model to time-kill curves for one drug and one organism would turn the ratios here into actual dose recommendations.</li>
+      <li><b>Toxicity.</b> I minimized total drug as a stand-in for side effects. Real constraints are drug specific, like peak concentration limits for aminoglycosides.</li>
+      <li><b>Adaptive immunity and tissue sites.</b> The immune term is innate and the infection is a single well-mixed compartment.</li>
+    </ul>
+
+    <h2>Code</h2>
+    <p>Repository: <a href="https://github.com/jadmycrazy/antibiotic-immune-dosing">github.com/jadmycrazy/antibiotic-immune-dosing</a>. The model, regimen search and immune sweep are in <code>antibiotic_dosing.py</code>. The browser simulator in Figure 1 is a line-by-line port of the same integrator.</p>
+
+    <h2>References</h2>
+    <ol class="refs">
+      <li>Ankomah P, Levin BR. Exploring the collaboration between antibiotics and the immune response in the treatment of acute, self-limiting infections. <i>PNAS</i>. 2014;111(23):8331-8338.</li>
+      <li>Drlica K. The mutant selection window and antimicrobial resistance. <i>Journal of Antimicrobial Chemotherapy</i>. 2003;52(1):11-17.</li>
+      <li>Regoes RR, Wiuff C, Zappala RM, Garner KN, Baquero F, Levin BR. Pharmacodynamic functions: a multiparameter approach to the design of antibiotic treatment regimens. <i>Antimicrobial Agents and Chemotherapy</i>. 2004;48(10):3670-3676.</li>
+      <li>Nicolau DP, Freeman CD, Belliveau PP, Nightingale CH, Ross JW, Quintiliani R. Experience with a once-daily aminoglycoside program administered to 2,184 adult patients. <i>Antimicrobial Agents and Chemotherapy</i>. 1995;39(3):650-655.</li>
+    </ol>
+  </article>
+  <nav class="next"><a href="kidney.html">Previous: kidney exchange</a><a href="radiotherapy.html">Next: radiotherapy fractionation</a></nav>
+</main>
+{{FOOT}}
+<script src="assets/charts.js"></script>
+<script>
+(async function () {
+  const { line, grid, hbars, css } = Charts;
+  const D = await (await fetch("data/antibiotic.json")).json();
+  const P = D.P;
+  const MIC_S = P.ec50S * Math.sqrt(P.kg / (P.Emax - P.kg));
+  const MIC_R = P.ec50R * Math.sqrt((P.kg * (1 - P.cost)) / (P.Emax - P.kg * (1 - P.cost)));
+  function simulate(dose, tau, immFrac) {
+    const T = P.days * 24, dt = P.dt, n = Math.round(T / dt), ke = Math.LN2 / P.thalf, kimm = P.kimm * immFrac;
+    let S = P.S0, R = P.R0, C = 0, next = 0, Rmax = R;
+    const E = (c, e) => { const ch = Math.pow(c, P.hill); return (P.Emax * ch) / (Math.pow(e, P.hill) + ch); };
+    const f = (S, R, C) => { const N = S + R, lg = 1 - N / P.Bmax, im = kimm / (1 + N / P.Kimm), gS = P.kg * lg, gR = P.kg * (1 - P.cost) * lg, mu = P.mu * Math.max(gS, 0) * S;
+      return [gS * S - E(C, P.ec50S) * S - im * S - mu, gR * R - E(C, P.ec50R) * R - im * R + mu]; };
+    const tr = { C: [], S: [], R: [] };
+    for (let i = 0; i < n; i++) {
+      const t = i * dt;
+      if (t + 1e-9 >= next && next < T) { C += dose / P.V; next += tau; }
+      const c0 = C, cm = C * Math.exp(-ke * dt / 2), c1 = C * Math.exp(-ke * dt);
+      const k1 = f(S, R, c0), k2 = f(S + dt / 2 * k1[0], R + dt / 2 * k1[1], cm), k3 = f(S + dt / 2 * k2[0], R + dt / 2 * k2[1], cm), k4 = f(S + dt * k3[0], R + dt * k3[1], c1);
+      S += dt / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]); R += dt / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]); C = c1;
+      if (S < 1) S = 0; if (R < 1 && S === 0) R = 0; S = Math.max(S, 0); R = Math.max(R, 0); Rmax = Math.max(Rmax, R);
+      if (i % 20 === 0) { const h = t / 24; tr.C.push([h, Math.max(C, 0.01)]); tr.S.push([h, Math.max(S, 1)]); tr.R.push([h, Math.max(R, 1)]); }
+    }
+    const N = S + R; const outcome = N < 1 ? (Rmax >= 1000 ? "cleared-risky" : "cleared") : R > S ? "resistant" : "persistent";
+    return { tr, outcome, Rmax, total: dose * Math.ceil(T / tau) };
+  }
+  const st = { dose: 120, tau: 24, imm: 1 };
+  const tauSeg = document.getElementById("tauSeg");
+  D.taus.forEach((t) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t + " h"; b.onclick = () => { st.tau = t; drawSim(); }; tauSeg.append(b); });
+  const doseI = document.getElementById("dose"), immI = document.getElementById("imm");
+  doseI.oninput = () => { st.dose = +doseI.value; drawSim(); }; immI.oninput = () => { st.imm = +immI.value / 100; drawSim(); };
+  const sup = (e) => "10" + String(e).split("").map((c) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[+c]).join("");
+  function drawSim() {
+    document.getElementById("doseOut").textContent = st.dose + " mg"; document.getElementById("immOut").textContent = Math.round(st.imm * 100) + "%";
+    tauSeg.querySelectorAll("button").forEach((b, i) => b.setAttribute("aria-pressed", D.taus[i] === st.tau));
+    const r = simulate(st.dose, st.tau, st.imm);
+    const box = document.getElementById("simStatus"); box.replaceChildren();
+    const pill = document.createElement("span"); pill.className = "status";
+    const map = { cleared: ["ok", "✓ Cleared, no resistant growth"], "cleared-risky": ["warn", "! Cleared, but resistant cells expanded"], resistant: ["bad", "✕ Resistant strain took over"], persistent: ["warn", "! Infection persists"] };
+    pill.classList.add(map[r.outcome][0]); pill.textContent = map[r.outcome][1]; box.append(pill);
+    const sp = (a, b) => { const s = document.createElement("span"); s.append(a + " "); const x = document.createElement("b"); x.textContent = b; s.append(x); box.append(s); };
+    sp("Total drug:", r.total.toLocaleString() + " mg over 7 days"); sp("Peak resistant cells:", r.Rmax < 1 ? "0" : Math.round(r.Rmax).toExponential(1).replace("e+", " × 10^"));
+    line(document.getElementById("concChart"), { height: 190, series: [{ name: "Concentration", color: css("--ink"), width: 1.6, pts: r.tr.C, fmt: (v) => v.toFixed(2) + " mg/L" }],
+      bands: [{ y0: MIC_S, y1: MIC_R, fill: css("--accent-wash"), label: "Mutant selection window" }],
+      x: { min: 0, max: 7, ticks: [0, 1, 2, 3, 4, 5, 6, 7], fmt: (v) => "Day " + v }, y: { min: 0.1, max: 200, log: true, ticks: [0.1, 1, 10, 100], fmt: (v) => String(v) },
+      tipX: (x) => "Day " + x.toFixed(2), aria: "Drug concentration over time" });
+    line(document.getElementById("bactChart"), { height: 230, direct: true, series: [
+        { name: "Sensitive", color: css("--s1"), pts: r.tr.S, fmt: (v) => (v <= 1 ? "0" : v.toExponential(1)) },
+        { name: "Resistant", color: css("--s2"), pts: r.tr.R, fmt: (v) => (v <= 1 ? "0" : v.toExponential(1)) }],
+      x: { min: 0, max: 7, ticks: [0, 1, 2, 3, 4, 5, 6, 7], fmt: (v) => "Day " + v, label: "Time" }, y: { min: 1, max: 1e9, log: true, ticks: [1, 1e3, 1e6, 1e9], fmt: (v) => (v === 1 ? "1" : sup(Math.round(Math.log10(v)))) },
+      tipX: (x) => "Day " + x.toFixed(2), aria: "Bacterial populations over time" });
+    const lg = document.getElementById("bactLegend"); lg.replaceChildren();
+    [["Sensitive", css("--s1")], ["Resistant", css("--s2")]].forEach(([n, c]) => { const s = document.createElement("span"); const i = document.createElement("i"); i.style.background = c; s.append(i, n); lg.append(s); });
+  }
+  const cls = { c: ["--ok", "Cleared"], r: ["--bad", "Resistance took over"], p: ["--warn", "Infection persists"] };
+  function drawMaps() {
+    const lg = document.getElementById("mapLegend"); lg.replaceChildren();
+    Object.values(cls).concat([["--muted-mark", "Cleared after resistant growth"]]).forEach(([v, n]) => { const s = document.createElement("span"); const i = document.createElement("i"); i.className = "box"; i.style.background = css(v); s.append(i, n); lg.append(s); });
+    [["immune", "mapImm"], ["noimmune", "mapNo"]].forEach(([k, id]) => {
+      const best = D.best[k][0];
+      grid(document.getElementById(id), { rows: D.taus.length, cols: D.doses.length, height: 150, margin: { l: 56, b: k === "noimmune" ? 40 : 10 },
+        rowLabels: D.taus.map((t) => "q" + t + "h"),
+        colLabels: (c) => (k === "noimmune" && (D.doses[c] % 500 === 0 || c === 0) ? D.doses[c] + "" : null),
+        xLabel: k === "noimmune" ? "Dose per administration, mg" : null,
+        cell: (r, c) => { const cell = D.grid[k][r][c]; const risky = cell.o === "c" && cell.rmax >= 3; const v = risky ? "--muted-mark" : cls[cell.o][0];
+          const tot = D.doses[c] * Math.ceil(168 / D.taus[r]);
+          return { fill: css(v), mark: best[1] === D.doses[c] && best[2] === D.taus[r], tip: [D.doses[c] + " mg every " + D.taus[r] + " h", [{ value: risky ? "Cleared after resistant growth" : cls[cell.o][1], color: css(v) }, { value: tot.toLocaleString() + " mg", name: "total" }]] }; } });
+    });
+    hbars(document.getElementById("sweepChart"), { left: 96, max: 11000, ticks: [0, 2500, 5000, 7500, 10000], fmt: (v) => v.toLocaleString() + " mg",
+      items: D.sweep.map((s) => ({ label: Math.round(s.frac * 100) + "% immune", value: s.total, color: css("--s1"), note: s.dose + " mg every " + s.tau + " h" })), aria: "Total drug needed by immune strength" });
+  }
+  const all = () => { drawSim(); drawMaps(); };
+  all(); Charts.rerenderOnTheme(all);
+  Charts.onResize(all).observe(document.getElementById("concChart"));
+})();
+</script>
+</body></html>

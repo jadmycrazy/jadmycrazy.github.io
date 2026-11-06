@@ -1,0 +1,147 @@
+<title>Kidney Exchange Optimizer · Jad Almajnouni</title>
+{{HEAD}}
+<meta name="description" content="An integer program that finds 30% more transplants than a first-come matcher in simulated kidney paired-donation pools.">
+</head><body>
+{{BAR}}
+<main class="wrap">
+  <header class="article-head">
+    <div class="eyebrow">Project 01 · Optimization · Transplantation</div>
+    <h1>Kidney exchange: how many transplants is an optimizer worth?</h1>
+    <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/kidney-exchange-optimizer">Code on GitHub</a></span><span>Python · HiGHS</span></div>
+    <p class="dek">A patient who needs a kidney often has a willing donor whose kidney doesn't match. Paired exchange lets those pairs swap donors in a cycle. I built a pool simulator and an integer program to measure how many transplants the cycle choice alone decides.</p>
+  </header>
+
+  <section class="findings" aria-label="Key results">
+    <div class="finding"><div class="big">+30%</div><div class="what">more transplants than a first-come matcher in pools of 100 pairs</div></div>
+    <div class="finding"><div class="big">55%</div><div class="what">of pairs matched when 3-way cycles are allowed, versus 45% with swaps only</div></div>
+    <div class="finding"><div class="big">33%</div><div class="what">match rate for blood type O patients, against 87% for type A</div></div>
+  </section>
+
+  <figure class="fig" id="fig-pool">
+    <div class="fig-head"><div class="fig-title">Figure 1. One simulated pool of 36 incompatible pairs</div><span class="label">Interactive</span></div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Matching method" id="modeSeg">
+        <button type="button" data-mode="greedy3" aria-pressed="false">First-come</button>
+        <button type="button" data-mode="opt2" aria-pressed="false">Optimal, 2-way</button>
+        <button type="button" data-mode="opt3" aria-pressed="true">Optimal, up to 3-way</button>
+      </div>
+      <div class="seg" role="group" aria-label="Pool" id="poolSeg"></div>
+    </div>
+    <div class="chart" id="pool" style="max-width:560px;margin:0 auto"></div>
+    <div class="readout" id="poolReadout"></div>
+    <figcaption><b>Each node is a patient and their incompatible donor</b>, labeled with the patient's blood type. Gray lines are possible donations (donor of one pair can give to the patient of another). Green arrows are the exchanges each method picks. Hover a node for the pair's details.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>The problem</h2>
+    <p>About a third of people who come forward as living kidney donors can't give to the person they came for, because of blood type or because the patient has antibodies against the donor's tissue. Paired exchange solves this by pooling these pairs. If donor A can give to patient B and donor B can give to patient A, the two pairs swap. Longer cycles work the same way: A gives to B, B to C, C back to A.</p>
+    <p>Every operation in a cycle has to happen at the same time, so that no donor backs out after their own patient has been helped. That makes long cycles hard to run, and real programs cap them at two or three pairs. Within that cap, the program still has to decide which cycles to run. A pool of 100 pairs has about 3,000 possible cycles of length three or less, and picking one cycle rules out every other cycle that shares a pair with it.</p>
+
+    <h2>Model</h2>
+    <h3>Simulating a pool</h3>
+    <p>I generate pools with the method from Saidman et al. (2006), which is the standard benchmark in this literature. Each patient and donor gets a blood type drawn from US frequencies (O 48%, A 34%, B 14%, AB 4%). Each patient also gets a sensitization level, measured as panel reactive antibody (PRA): low (70% of patients, 5% chance of a positive crossmatch with a given donor), medium (20%, 45%), or high (10%, 90%). A pair only enters the pool if it is incompatible. A donor can give to another pair's patient if their blood types are compatible and a random crossmatch comes back negative.</p>
+    <h3>Choosing cycles</h3>
+    <p>I list every cycle up to length L with a depth-first search. Then I solve the cycle formulation integer program (Roth, Sönmez and Ünver 2007; Abraham, Blum and Sandholm 2007):</p>
+    <div class="eq">maximize    Σ_c |c| · x_c                 (transplants)
+subject to  Σ_{c ∋ i} x_c ≤ 1   for every pair i   (each pair in at most one cycle)
+            x_c ∈ {0, 1}</div>
+    <p>I solve it with HiGHS, an open-source MILP solver. Even the largest pools here (200 pairs, about 24,000 candidate cycles) solve to proven optimality in a few seconds.</p>
+    <p>The baseline is a first-come matcher. It walks through the same cycles in random order and accepts any cycle whose pairs are still free. This is roughly how an exchange behaves without an optimizer: it takes good options as it finds them, without asking what each choice blocks.</p>
+  </article>
+
+  <figure class="fig" id="fig-size">
+    <div class="fig-head"><div class="fig-title">Figure 2. Share of pairs matched as the pool grows</div></div>
+    <div class="legend" id="sizeLegend"></div>
+    <div class="chart" id="sizeChart"></div>
+    <figcaption><b>Optimization gains about 13 points over a first-come matcher once pools reach 100 pairs.</b> Each point averages 40 simulated pools. Allowing 3-way cycles adds about 10 points over 2-way swaps at every size.</figcaption>
+    <details class="tbl"><summary>Show table</summary><div class="scroll"><table class="data" id="sizeTable"></table></div></details>
+  </figure>
+
+  <article class="prose">
+    <h2>Results</h2>
+    <p>In pools of 100 pairs, the optimal 3-way solution matched 55.4% of pairs on average. The first-come matcher, choosing from the same set of cycles, matched 42.6%. That is 13 more transplants per 100 pairs, a 30% increase, with no new donors. Restricting the optimizer to 2-way swaps gave 45.3%, so most of the 3-way benefit only appears when an optimizer is choosing.</p>
+    <p>The first-come matcher barely improves as the pool grows. It goes from 34% at 40 pairs to 45% at 200, while the optimizer reaches 59%. Bigger pools create more possible cycles, but a matcher that takes cycles in arrival order uses up the flexible pairs early, which leaves the hard-to-match pairs with nobody.</p>
+
+    <h2>Who gets left behind</h2>
+    <p>Blood type decides most of who gets matched. A type O patient can only receive from an O donor, and O donors are in demand from every other type. So O patients pile up in the pool: they made up 60% of the patients in my simulated pools of 100, compared with 48% of the general population. Even with an optimal match, only a third of them received a kidney.</p>
+  </article>
+
+  <figure class="fig" id="fig-blood">
+    <div class="fig-head"><div class="fig-title">Figure 3. Match rate by patient blood type, optimal 3-way solution, 100-pair pools</div></div>
+    <div class="chart" id="bloodChart"></div>
+    <figcaption><b>Type O patients are matched at less than half the rate of other types.</b> Counts are pooled over 40 simulated pools (4,000 pairs).</figcaption>
+  </figure>
+
+  <article class="prose">
+    <p>Sensitization behaved less intuitively. Highly sensitized patients were matched at 66%, higher than low-PRA patients at 47%. This is a selection effect. A low-PRA patient usually ends up in the pool because of blood type incompatibility, which often means an O patient. A highly sensitized patient is usually there because of a positive crossmatch, often with a blood-compatible donor who is easy to place. Comparing PRA levels within one blood type would separate the two effects, and it is the next thing I would run.</p>
+
+    <h2>What this leaves out</h2>
+    <ul>
+      <li><b>Chains.</b> Real exchanges get many of their transplants from chains started by a non-directed (altruistic) donor. Chains can be long because they don't need to happen at once. Adding them would likely raise every curve.</li>
+      <li><b>Time.</b> Real pools change week to week. A dynamic model would ask whether to match now or wait for a better pool, which is a harder problem than the static one here.</li>
+      <li><b>Priorities.</b> The objective counts every transplant equally. Real programs weight hard-to-match patients and medical urgency, which would change who the optimizer picks.</li>
+      <li><b>Failed crossmatches.</b> Some planned transplants fall through at final testing. Robust formulations plan for that.</li>
+    </ul>
+
+    <h2>Code</h2>
+    <p>Repository: <a href="https://github.com/jadmycrazy/kidney-exchange-optimizer">github.com/jadmycrazy/kidney-exchange-optimizer</a>. Everything on this page comes from <code>kidney_exchange.py</code>: the pool generator, cycle search, MILP, baseline, and the exported figure data. It runs in about three and a half minutes on a laptop.</p>
+
+    <h2>References</h2>
+    <ol class="refs">
+      <li>Saidman SL, Roth AE, Sönmez T, Ünver MU, Delmonico FL. Increasing the opportunity of live kidney donation by matching for two- and three-way exchanges. <i>Transplantation</i>. 2006;81(5):773-782.</li>
+      <li>Roth AE, Sönmez T, Ünver MU. Efficient kidney exchange: coincidence of wants in markets with compatibility-based preferences. <i>American Economic Review</i>. 2007;97(3):828-851.</li>
+      <li>Abraham DJ, Blum A, Sandholm T. Clearing algorithms for barter exchange markets: enabling nationwide kidney exchanges. <i>Proceedings of the 8th ACM Conference on Electronic Commerce</i>. 2007:295-304.</li>
+      <li>Huangfu Q, Hall JAJ. Parallelizing the dual revised simplex method. <i>Mathematical Programming Computation</i>. 2018;10:119-142.</li>
+    </ol>
+  </article>
+  <nav class="next"><a href="index.html">All projects</a><a href="antibiotic.html">Next: antibiotic dosing</a></nav>
+</main>
+{{FOOT}}
+<script src="assets/charts.js"></script>
+<script src="assets/kidney-net.js"></script>
+<script>
+(async function () {
+  const { line, hbars, css } = Charts;
+  const D = await (await fetch("data/kidney.json")).json();
+  let mode = "opt3", poolIdx = 0;
+  const names = { greedy3: "First-come", opt2: "Optimal, 2-way", opt3: "Optimal, up to 3-way" };
+  const poolSeg = document.getElementById("poolSeg");
+  D.examples.forEach((_, i) => { const b = document.createElement("button"); b.type = "button"; b.textContent = "Pool " + (i + 1); b.setAttribute("aria-pressed", i === 0); b.onclick = () => { poolIdx = i; drawP(); }; poolSeg.appendChild(b); });
+  document.querySelectorAll("#modeSeg button").forEach((b) => (b.onclick = () => { mode = b.dataset.mode; drawP(); }));
+  function drawP() {
+    document.querySelectorAll("#modeSeg button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mode === mode));
+    poolSeg.querySelectorAll("button").forEach((b, i) => b.setAttribute("aria-pressed", i === poolIdx));
+    const ex = D.examples[poolIdx], r = drawPool(document.getElementById("pool"), ex, mode);
+    const counts = ["greedy3", "opt2", "opt3"].map((k) => ex[k].reduce((a, c) => a + c.length, 0));
+    const ro = document.getElementById("poolReadout"); ro.replaceChildren();
+    const add = (label, val) => { const s = document.createElement("span"); s.append(label + " "); const b = document.createElement("b"); b.textContent = val; s.append(b); ro.append(s); };
+    add(names[mode] + ":", r.matched + " of 36 patients transplanted");
+    add("Cycles:", String(r.cycles));
+    add("Compare:", `first-come ${counts[0]} · 2-way ${counts[1]} · 3-way ${counts[2]}`);
+  }
+  const series = () => [
+    { key: "opt3", name: "Optimal, 3-way", color: css("--s1") },
+    { key: "opt2", name: "Optimal, 2-way", color: css("--s3") },
+    { key: "greedy3", name: "First-come", color: css("--s2") },
+  ];
+  function drawSize() {
+    const ss = series().map((s) => ({ name: s.name, color: s.color, pts: D.sizes.map((r) => [r.n, r[s.key] * 100]), dots: D.sizes.map((r) => [r.n, r[s.key] * 100]), fmt: (v) => v.toFixed(1) + "%" }));
+    line(document.getElementById("sizeChart"), { series: ss, direct: true, height: 320, x: { min: 0, max: 200, ticks: [0, 50, 100, 150, 200], label: "Pairs in pool" }, y: { min: 0, max: 70, ticks: [0, 10, 20, 30, 40, 50, 60, 70], fmt: (v) => v + "%" }, tipX: (x) => Math.round(x) + " pairs (nearest pool size)", aria: "Match rate versus pool size" });
+    const lg = document.getElementById("sizeLegend"); lg.replaceChildren();
+    series().forEach((s) => { const sp = document.createElement("span"); const i = document.createElement("i"); i.style.background = s.color; sp.append(i, s.name); lg.append(sp); });
+  }
+  function drawBlood() {
+    const g = D.groups.blood, order = ["O", "A", "B", "AB"];
+    hbars(document.getElementById("bloodChart"), { left: 90, max: 1, ticks: [0, 0.25, 0.5, 0.75, 1], fmt: (v) => Math.round(v * 100) + "%", items: order.map((k) => ({ label: "Type " + k, value: g[k].rate, color: k === "O" ? css("--s2") : css("--s1"), note: g[k].n.toLocaleString() + " patients" })), aria: "Match rate by blood type" });
+  }
+  const t = document.getElementById("sizeTable");
+  t.innerHTML = "<thead><tr><th>Pairs</th><th class='r'>Candidate cycles</th><th class='r'>First-come</th><th class='r'>Optimal 2-way</th><th class='r'>Optimal 3-way</th></tr></thead>";
+  const tb = document.createElement("tbody");
+  D.sizes.forEach((r) => { const tr = document.createElement("tr"); [r.n, r.ncycles3.toLocaleString(), (r.greedy3 * 100).toFixed(1) + "%", (r.opt2 * 100).toFixed(1) + "%", (r.opt3 * 100).toFixed(1) + "%"].forEach((v, i) => { const td = document.createElement("td"); if (i) td.className = "r"; td.textContent = v; tr.append(td); }); tb.append(tr); });
+  t.append(tb);
+  const all = () => { drawP(); drawSize(); drawBlood(); };
+  all(); Charts.rerenderOnTheme(all);
+  Charts.onResize(() => { drawSize(); drawBlood(); }).observe(document.getElementById("sizeChart"));
+})();
+</script>
+</body></html>

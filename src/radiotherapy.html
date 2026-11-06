@@ -1,0 +1,169 @@
+<title>Radiotherapy Fractionation · Jad Almajnouni</title>
+{{HEAD}}
+<meta name="description" content="Using the linear-quadratic model to find the number of radiation fractions that maximizes tumor dose at a fixed level of normal-tissue damage.">
+</head><body>
+{{BAR}}
+<main class="wrap">
+  <header class="article-head">
+    <div class="eyebrow">Project 03 · Optimization · Radiation oncology</div>
+    <h1>How many fractions? Choosing a radiotherapy schedule with the linear-quadratic model</h1>
+    <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/radiotherapy-fractionation">Code on GitHub</a></span><span>Python · LQ model</span></div>
+    <p class="dek">Radiation is split into daily fractions so healthy tissue can repair between doses. I wrote an optimizer that, for a fixed limit on late damage to healthy tissue, finds the number of fractions that delivers the most effective dose to the tumor. It recovers the direction of three recent shifts in clinical practice.</p>
+  </header>
+
+  <section class="findings" aria-label="Key results">
+    <div class="finding"><div class="big">6 × 7.9 Gy</div><div class="what">optimal prostate schedule, close to the 5-fraction regimen tested in PACE-B</div></div>
+    <div class="finding"><div class="big">1.6%</div><div class="what">spread in breast tumor dose between 5 and 40 fractions, so short courses lose almost nothing</div></div>
+    <div class="finding"><div class="big">+15%</div><div class="what">head and neck tumor dose from finishing before repopulation starts at day 21</div></div>
+  </section>
+
+  <figure class="fig" id="fig-opt">
+    <div class="fig-head"><div class="fig-title">Figure 1. Tumor dose for every schedule that meets the healthy-tissue limit</div><span class="label">Interactive</span></div>
+    <div class="controls">
+      <div><div class="label" style="margin-bottom:6px">Preset</div><div class="seg" role="group" aria-label="Tumor site" id="siteSeg"></div></div>
+      <div class="control"><label for="ab">Tumor α/β <output id="abOut"></output></label><input id="ab" type="range" min="1" max="15" step="0.5"></div>
+      <div class="control"><label for="sp">Sparing factor <output id="spOut"></output></label><input id="sp" type="range" min="0.3" max="1" step="0.05"></div>
+      <div class="control"><label for="pr">Repopulation <output id="prOut"></output></label><input id="pr" type="range" min="0" max="1.2" step="0.1"></div>
+    </div>
+    <div class="readout" id="optReadout"></div>
+    <div class="chart" id="optChart"></div>
+    <figcaption><b>Each point is a schedule of n equal fractions</b>, with the dose per fraction set as high as the late-tissue limit allows. The y-axis is the tumor's biologically effective dose (BED). Schedules that need more than 8 Gy per fraction are shown dashed, since the LQ model is unreliable there. Repopulation is the tumor dose lost per day of treatment after day 21.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>The problem</h2>
+    <p>The standard course for many cancers used to be about 2 Gy a day, five days a week, for six to seven weeks. Over the past decade, trials have shown that some cancers do as well or better with far fewer, larger fractions. Breast cancer moved to 15 fractions and then to 5 (FAST-Forward). Prostate cancer moved to 20 fractions and then to 5 (CHHiP, PACE-B). Other cancers, like head and neck, still get many small fractions.</p>
+    <p>Why would the right schedule depend on the cancer? I wanted to see how much of the answer falls out of one simple model, with one optimization problem.</p>
+
+    <h2>Model</h2>
+    <p>The linear-quadratic (LQ) model says a dose d kills a fraction exp(−αd − βd²) of cells. Splitting the same total dose into more fractions shrinks the βd² term, which spares tissue. How much a tissue benefits from small fractions depends on its α/β ratio. Late-responding healthy tissue has a low ratio, around 3 Gy, so it benefits a lot. Many tumors have a high ratio, around 10 Gy, so they benefit little, which means fractionation spares healthy tissue more than tumor. Prostate cancer is the well-known exception, with an estimated α/β of about 1.5 Gy.</p>
+    <p>The biologically effective dose puts schedules on one scale. For n fractions of d Gy:</p>
+    <div class="eq">tumor BED   = n·d·(1 + d/(α/β)_T) − D_prolif · max(0, T − T_k)
+healthy BED = n·(s·d)·(1 + s·d/(α/β)_N)
+
+maximize tumor BED over n = 1 … 40
+subject to  healthy BED ≤ 116.7 Gy₃   (35 × 2 Gy with s = 1)
+            d ≤ 8 Gy</div>
+    <p>Here s is the sparing factor, the share of the tumor dose that reaches the nearby healthy tissue. Modern techniques like IMRT and SBRT lower s. T is the overall treatment time in days (five fractions a week, weekends off). After a kickoff time T<sub>k</sub> of about 21 days, fast-growing tumors start repopulating, which costs about 0.9 Gy of BED per day (Withers et al. 1988; Fowler 1989).</p>
+    <p>For each n the constraint is a quadratic in d, so the largest allowed dose has a closed form. The optimizer evaluates all 40 schedules and keeps the best one. Without repopulation the problem has a known analytical answer (Mizuta et al. 2012): fewer, larger fractions win exactly when s × (α/β)<sub>T</sub> &lt; (α/β)<sub>N</sub>. My grid search matches that boundary, which is a useful check on the code.</p>
+  </article>
+
+  <figure class="fig" id="fig-phase">
+    <div class="fig-head"><div class="fig-title">Figure 2. Best number of fractions across tumor types and sparing</div></div>
+    <div class="legend" id="phaseLegend"></div>
+    <div class="chart" id="phaseChart"></div>
+    <figcaption><b>The best schedule flips from many fractions to few at a sharp boundary.</b> The dashed curve is the analytical boundary s = (α/β)<sub>N</sub> / (α/β)<sub>T</sub>. Below it (more sparing, or a lower tumor α/β) fewer fractions win, down to the smallest count allowed by the 8 Gy cap. No repopulation in this map.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>Results</h2>
+    <p>I ran the optimizer with α/β values from the trial literature for three sites.</p>
+  </article>
+
+  <figure class="fig">
+    <div class="scroll"><table class="data">
+      <thead><tr><th>Site</th><th class="r">Tumor α/β</th><th class="r">Sparing s</th><th>Model optimum</th><th class="r">Gain over 35 fractions</th><th>Current practice</th></tr></thead>
+      <tbody>
+        <tr><td>Prostate</td><td class="r">1.5 Gy</td><td class="r">0.8</td><td>6 × 7.85 Gy</td><td class="r">+60.6 Gy<sub>1.5</sub></td><td>36.25 Gy in 5 fractions (PACE-B)</td></tr>
+        <tr><td>Breast</td><td class="r">3.5 Gy</td><td class="r">0.9</td><td>Flat: 5 to 40 fractions within 1.6%</td><td class="r">+0.1 Gy<sub>3.5</sub></td><td>26 Gy in 5 fractions (FAST-Forward)</td></tr>
+        <tr><td>Head and neck</td><td class="r">10 Gy</td><td class="r">0.9</td><td>16 × 3.79 Gy</td><td class="r">+11.1 Gy<sub>10</sub></td><td>70 Gy in 35, or 55 Gy in 20 fractions</td></tr>
+      </tbody>
+    </table></div>
+    <figcaption><b>Model optima for three sites, with late-tissue damage held at the 35 × 2 Gy level.</b> Head and neck includes repopulation (0.9 Gy/day after day 21). Gains are in each tumor's own BED units.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <p><b>Prostate.</b> With α/β below the healthy-tissue value, every step toward larger fractions helps the tumor more than it hurts healthy tissue. The optimizer pushes to the largest dose allowed (8 Gy) and lands at 6 fractions, which is close to the 5-fraction SBRT schedules now in use. The model's gain here is large, but it is also where the LQ model is least trusted, so I would read it as a direction, not a size.</p>
+    <p><b>Breast.</b> With a tumor α/β of 3.5 and s of 0.9, the tumor and healthy tissue respond to fraction size almost equally, and the curve is nearly flat: 125.3 Gy at 5 fractions against 127.3 Gy at 40. The model says the schedule barely matters for tumor control, so the choice comes down to cost, convenience and acute side effects. That is the argument FAST-Forward made by showing 5 fractions were non-inferior.</p>
+    <p><b>Head and neck.</b> A high α/β favors many small fractions, but repopulation punishes long courses. The optimum is 16 fractions, the longest schedule that still ends on day 21, just before repopulation starts. It beats 35 fractions by 15% in tumor BED. That is close to the 20-fraction schedule used in the UK, and it is the logic behind accelerated radiotherapy trials.</p>
+
+    <h2>What this leaves out</h2>
+    <ul>
+      <li><b>Acute toxicity.</b> I only constrained late effects. Short, intense courses also cause acute reactions, which matter most in head and neck.</li>
+      <li><b>Uncertain α/β.</b> Published estimates have wide confidence intervals. A robust version would optimize against a distribution of α/β rather than one value.</li>
+      <li><b>One sparing factor.</b> Real plans deliver a different dose to every voxel of each organ. The next step is to replace s with dose-volume histograms.</li>
+      <li><b>The LQ model at high doses.</b> Above roughly 8 to 10 Gy per fraction, LQ may overestimate cell kill, which is why I capped dose per fraction.</li>
+    </ul>
+
+    <h2>Code</h2>
+    <p>Repository: <a href="https://github.com/jadmycrazy/radiotherapy-fractionation">github.com/jadmycrazy/radiotherapy-fractionation</a>. The optimizer, site runs and phase map are in <code>radiotherapy_fractionation.py</code>. Figure 1 recomputes the same closed-form solution in your browser.</p>
+
+    <h2>References</h2>
+    <ol class="refs">
+      <li>Fowler JF. The linear-quadratic formula and progress in fractionated radiotherapy. <i>British Journal of Radiology</i>. 1989;62(740):679-694.</li>
+      <li>Withers HR, Taylor JMG, Maciejewski B. The hazard of accelerated tumor clonogen repopulation during radiotherapy. <i>Acta Oncologica</i>. 1988;27(2):131-146.</li>
+      <li>Brenner DJ, Hall EJ. Fractionation and protraction for radiotherapy of prostate carcinoma. <i>International Journal of Radiation Oncology, Biology, Physics</i>. 1999;43(5):1095-1101.</li>
+      <li>Mizuta M, Takao S, Date H, et al. A mathematical study to select fractionation regimen based on physical dose distribution and the linear-quadratic model. <i>International Journal of Radiation Oncology, Biology, Physics</i>. 2012;84(3):829-833.</li>
+      <li>Murray Brunt A, Haviland JS, Wheatley DA, et al. Hypofractionated breast radiotherapy for 1 week versus 3 weeks (FAST-Forward). <i>The Lancet</i>. 2020;395(10237):1613-1626.</li>
+      <li>Brand DH, Tree AC, Ostler P, et al. Intensity-modulated fractionated radiotherapy versus stereotactic body radiotherapy for prostate cancer (PACE-B): acute toxicity findings. <i>The Lancet Oncology</i>. 2019;20(11):1531-1543.</li>
+    </ol>
+  </article>
+  <nav class="next"><a href="antibiotic.html">Previous: antibiotic dosing</a><a href="index.html">All projects</a></nav>
+</main>
+{{FOOT}}
+<script src="assets/charts.js"></script>
+<script>
+(async function () {
+  const { line, grid, css, el } = Charts;
+  const D = await (await fetch("data/radiotherapy.json")).json();
+  const ABN = 3, LIM = D.ref_bed_n, DMAX = 8;
+  const days = (n) => (n <= 1 ? 0 : Math.floor((n - 1) / 5) * 7 + ((n - 1) % 5));
+  const dpf = (n, s) => { const a = n / ABN, b = n, c = -LIM; return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a) / s; };
+  function curve(abT, s, prolif, Tk) {
+    const out = []; for (let n = 1; n <= 40; n++) { const d = dpf(n, s); out.push({ n, d, bed: n * d * (1 + d / abT) - prolif * Math.max(0, days(n) - Tk), ok: d <= DMAX }); }
+    let best = null; out.forEach((c) => { if (c.ok && (!best || c.bed > best.bed + 1e-9)) best = c; }); return { out, best };
+  }
+  const st = { abT: 1.5, s: 0.8, prolif: 0, Tk: 21 };
+  const siteSeg = document.getElementById("siteSeg");
+  D.sites.forEach((x) => { const b = document.createElement("button"); b.type = "button"; b.textContent = x.site; b.onclick = () => { Object.assign(st, { abT: x.abT, s: x.s, prolif: x.prolif, Tk: x.Tk || 21 }); sync(); }; siteSeg.append(b); });
+  const ab = document.getElementById("ab"), sp = document.getElementById("sp"), pr = document.getElementById("pr");
+  ab.oninput = () => { st.abT = +ab.value; drawOpt(); }; sp.oninput = () => { st.s = +sp.value; drawOpt(); }; pr.oninput = () => { st.prolif = +pr.value; drawOpt(); };
+  function sync() { ab.value = st.abT; sp.value = st.s; pr.value = st.prolif; drawOpt(); }
+  function drawOpt() {
+    document.getElementById("abOut").textContent = st.abT.toFixed(1) + " Gy"; document.getElementById("spOut").textContent = st.s.toFixed(2);
+    document.getElementById("prOut").textContent = st.prolif ? st.prolif.toFixed(1) + " Gy/day" : "off";
+    siteSeg.querySelectorAll("button").forEach((b, i) => { const x = D.sites[i]; b.setAttribute("aria-pressed", x.abT === st.abT && x.s === st.s && x.prolif === st.prolif); });
+    const { out, best } = curve(st.abT, st.s, st.prolif, st.Tk);
+    const okPts = out.filter((c) => c.ok).map((c) => [c.n, c.bed]), badPts = out.filter((c, i) => !c.ok || (i > 0 && !out[i - 1].ok)).map((c) => [c.n, c.bed]);
+    const lo = Math.min(...out.map((c) => c.bed)), hi = Math.max(...out.map((c) => c.bed));
+    const pad = Math.max(2, (hi - lo) * 0.15), ymin = Math.floor((lo - pad) / 5) * 5, ymax = Math.ceil((hi + pad) / 5) * 5;
+    const ref = out[34];
+    line(document.getElementById("optChart"), { height: 300, series: [
+        { name: "", color: css("--muted-mark"), dash: "4 4", pts: badPts, noTip: true },
+        { name: "Tumor BED", color: css("--s1"), pts: okPts, dots: best ? [[best.n, best.bed]] : [], fmt: (v) => v.toFixed(1) + " Gy" }],
+      vlines: [{ x: 35, label: "35 × 2 Gy-equivalent" }],
+      x: { min: 1, max: 40, ticks: [1, 5, 10, 15, 20, 25, 30, 35, 40], label: "Number of fractions" },
+      y: { min: ymin, max: ymax, fmt: (v) => v + "" },
+      tipX: (x) => { const n = Math.min(40, Math.max(1, Math.round(x))); return n + " fractions × " + out[n - 1].d.toFixed(2) + " Gy"; }, aria: "Tumor BED by number of fractions" });
+    const ro = document.getElementById("optReadout"); ro.replaceChildren();
+    const add = (a, b) => { const s = document.createElement("span"); s.append(a + " "); const x = document.createElement("b"); x.textContent = b; s.append(x); ro.append(s); };
+    add("Best schedule:", best.n + " fractions × " + best.d.toFixed(2) + " Gy");
+    add("Tumor BED:", best.bed.toFixed(1) + " Gy"); add("vs 35 fractions:", (best.bed - ref.bed >= 0 ? "+" : "") + (best.bed - ref.bed).toFixed(1) + " Gy");
+    add("Treatment time:", days(best.n) + 1 + " days");
+  }
+  function drawPhase() {
+    const P = D.phase, rows = P.s.length, cols = P.ab.length;
+    const cls = (n) => (n >= 40 ? ["--s1", 0.18, "Many small fractions (40)"] : n > 10 ? ["--s1", 0.55, "11 to 39 fractions"] : ["--s1", 1, "10 or fewer fractions"]);
+    const host = document.getElementById("phaseChart");
+    const svg = grid(host, { rows, cols, height: 300, gap: 0, margin: { l: 64, b: 44, r: 10 },
+      rowLabels: P.s.map((_, r) => { const s = P.s[rows - 1 - r]; return [1, 0.8, 0.6, 0.4].some((v) => Math.abs(v - s) < 1e-6) ? "s = " + s.toFixed(1) : ""; }),
+      colLabels: (c) => ([1, 3, 5, 7.5, 10, 12.5, 15].some((v) => Math.abs(v - P.ab[c]) < 1e-6) ? String(P.ab[c]) : null),
+      xLabel: "Tumor α/β, Gy",
+      cell: (r, c) => { const n = P.n[rows - 1 - r][c], k = cls(n); return { fill: `color-mix(in srgb, ${css(k[0])} ${k[1] * 100}%, ${css("--paper")})`, tip: ["α/β " + P.ab[c] + " Gy · s " + P.s[rows - 1 - r].toFixed(2), [{ value: n + " fractions", name: "optimal" }]] }; } });
+    svg.querySelectorAll("rect").forEach((r) => { const f = r.getAttribute("fill"); if (f && f.startsWith("color-mix")) { r.style.fill = f; } });
+    const W = +svg.getAttribute("viewBox").split(" ")[2], H = 300, m = { l: 64, r: 10, t: 8, b: 44 };
+    const cw = (W - m.l - m.r) / cols, ch = (H - m.t - m.b) / rows;
+    const xOf = (a) => m.l + ((a - P.ab[0]) / (P.ab[1] - P.ab[0]) + 0.5) * cw;
+    const yOf = (s) => m.t + (rows - 1 - (s - P.s[0]) / (P.s[1] - P.s[0]) + 0.5) * ch;
+    const pts = []; for (let a = 3; a <= 15; a += 0.1) { const s = 3 / a; if (s >= P.s[0] && s <= 1) pts.push(xOf(a).toFixed(1) + " " + yOf(s).toFixed(1)); }
+    el("path", { d: "M" + pts.join(" L"), fill: "none", stroke: css("--ink"), "stroke-width": 1.6, "stroke-dasharray": "5 4", "pointer-events": "none" }, svg);
+    const lg = document.getElementById("phaseLegend"); lg.replaceChildren();
+    [[1, "10 or fewer fractions"], [0.55, "11 to 39 fractions"], [0.18, "40 fractions"]].forEach(([o, n]) => { const s = document.createElement("span"); const i = document.createElement("i"); i.className = "box"; i.style.background = `color-mix(in srgb, ${css("--s1")} ${o * 100}%, ${css("--paper")})`; s.append(i, n); lg.append(s); });
+    const s2 = document.createElement("span"); const i2 = document.createElement("i"); i2.style.background = "transparent"; i2.style.borderTop = "2px dashed " + css("--ink"); i2.style.height = "0"; s2.append(i2, "Analytical boundary"); lg.append(s2);
+  }
+  const all = () => { drawOpt(); drawPhase(); };
+  sync(); drawPhase(); Charts.rerenderOnTheme(all);
+  Charts.onResize(all).observe(document.getElementById("optChart"));
+})();
+</script>
+</body></html>
