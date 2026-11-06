@@ -6,6 +6,6 @@ Source for my personal site: three project write-ups with interactive figures, b
 - `assets/` stylesheet, chart helpers, kidney-pool renderer
 - `data/` figure data exported by the project repos
 
-Build with `python build.py`, then copy `netlify/` to `docs/`. GitHub Pages serves `docs/` at https://jadmycrazy.github.io.
+Build with `python build.py`, then copy `netlify/*.html` to the repo root. GitHub Pages serves the root at https://jadmycrazy.github.io.
 
 Projects: [kidney-exchange-optimizer](https://github.com/jadmycrazy/kidney-exchange-optimizer) · [antibiotic-immune-dosing](https://github.com/jadmycrazy/antibiotic-immune-dosing) · [radiotherapy-fractionation](https://github.com/jadmycrazy/radiotherapy-fractionation)
