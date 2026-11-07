@@ -10,7 +10,7 @@ window.drawPool = function (host, pool, mode, opts) {
   const defs = el("defs", {}, svg);
   const mk = el("marker", { id: "arw" + (opts.mini ? "m" : ""), viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" }, defs);
   el("path", { d: "M0 0 L10 5 L0 10 z", fill: accent }, mk);
-  const gEdges = el("g", { opacity: opts.mini ? 0.55 : 0.7 }, svg);
+  const gEdges = el("g", { opacity: opts.mini ? 0.55 : 0.7, class: "fade" }, svg);
   pool.edges.forEach(([i, j]) => el("line", { x1: pos[i][0], y1: pos[i][1], x2: pos[j][0], y2: pos[j][1], stroke: faint, "stroke-width": 0.7 }, gEdges));
   const cycles = pool[mode] || [];
   const matched = new Set(); cycles.forEach((c) => c.forEach((v) => matched.add(v)));
@@ -25,13 +25,13 @@ window.drawPool = function (host, pool, mode, opts) {
       const mx = (a[0] + b[0]) / 2 - uy * L * bend, my = (a[1] + b[1]) / 2 + ux * L * bend;
       const sx = a[0] + ux * (nodeR + 2), sy = a[1] + uy * (nodeR + 2);
       const ex = b[0] - ux * (nodeR + 3), ey = b[1] - uy * (nodeR + 3);
-      el("path", { d: `M${sx} ${sy} Q${mx} ${my} ${ex} ${ey}`, fill: "none", stroke: accent, "stroke-width": opts.mini ? 1.6 : 2.2, "marker-end": opts.mini ? "" : `url(#arw)` }, gC);
+      el("path", { d: `M${sx} ${sy} Q${mx} ${my} ${ex} ${ey}`, fill: "none", stroke: accent, "stroke-width": opts.mini ? 1.6 : 2.2, "marker-end": opts.mini ? "" : `url(#arw)`, pathLength: 1, class: "draw" }, gC);
     }
   });
   const tip = opts.mini ? null : tipEl(host);
   pool.pairs.forEach((p, i) => {
     const m = matched.has(i);
-    const c = el("circle", { cx: pos[i][0], cy: pos[i][1], r: nodeR, fill: m ? accent : paper, stroke: m ? accent : css("--ink-3"), "stroke-width": 1.5 }, svg);
+    const c = el("circle", { cx: pos[i][0], cy: pos[i][1], r: nodeR, fill: m ? accent : paper, stroke: m ? accent : css("--ink-3"), "stroke-width": 1.5, class: "pop", style: `--d:${i * 18}ms` }, svg);
     if (!opts.mini) {
       txt(svg, pos[i][0], pos[i][1] + 3.5, p.p, { "text-anchor": "middle", "font-size": p.p.length > 1 ? 8.5 : 10, "font-weight": 650, fill: m ? paper : ink, "pointer-events": "none" });
       const hit = el("circle", { cx: pos[i][0], cy: pos[i][1], r: 16, fill: "transparent" }, svg);

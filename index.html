@@ -11,58 +11,79 @@
 
 <meta name="description" content="Jad Almajnouni: biomedical engineering at Duke. Optimization and simulation models for transplantation, infectious disease and radiation oncology.">
 <style>
-  .hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 40px; align-items: center; padding-block: 64px 40px; }
-  .hero h1 { font-size: clamp(2.6rem, 8vw, 5.4rem); font-stretch: 122%; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  .hero { padding-block: clamp(56px, 12vh, 120px) 56px; max-width: 640px; }
+  .hero h1 { font-size: clamp(2.8rem, 8.4vw, 5.6rem); font-stretch: 122%; margin-top: 18px; }
   .hero .lead { font-size: clamp(1.2rem, 2.2vw, 1.45rem); line-height: 1.45; margin-top: 26px; max-width: 34ch; color: var(--ink); }
   .hero .sub { color: var(--ink-2); margin-top: 18px; max-width: 52ch; }
-  .hero-fig { min-width: 0; }
-  .hero-fig .cap { font-family: var(--font-display); font-size: 0.8rem; color: var(--ink-3); margin-top: 6px; text-align: center; }
-  .links { display: flex; gap: 18px; flex-wrap: wrap; font-family: var(--font-display); font-size: 0.95rem; margin-top: 26px; }
-  @media (max-width: 760px) { .hero { grid-template-columns: 1fr; padding-top: 40px; } .hero-fig { max-width: 360px; } }
+  .links { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-family: var(--font-display); font-size: 0.92rem; margin-top: 30px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding-inline: 15px; border-radius: 9px; border: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 85%, transparent); color: var(--ink); text-decoration: none; transition: transform 140ms var(--ease-out), border-color 150ms, background-color 150ms; }
+  .btn:hover { border-color: var(--ink-3); text-decoration: none; }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn .arr { transition: transform 200ms var(--ease-out); }
+  .btn:hover .arr { transform: translateX(3px); }
+  .swap { display: inline-grid; } .swap > span { grid-area: 1 / 1; transition: opacity 200ms ease, transform 200ms var(--ease-out); }
+  .swap > span + span { opacity: 0; transform: translateY(6px); }
+  #copyEmail[data-state="copied"] .swap > span:first-child, #copyEmail[data-state="selected"] .swap > span:first-child { opacity: 0; transform: translateY(-6px); }
+  #copyEmail[data-state="copied"] .swap > .ok-copied, #copyEmail[data-state="selected"] .swap > .ok-selected { opacity: 1; transform: none; }
   .sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; border-top: 2px solid var(--ink); padding-top: 14px; margin-top: 56px; }
   .sec-head h2 { margin: 0; }
-  .plate { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 32px; padding-block: 32px; border-bottom: 1px solid var(--rule); text-decoration: none; color: inherit; }
-  .plate:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-  .plate .thumb { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 10px 4px; min-width: 0; }
+  .plate { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 32px; padding: 28px 20px; margin-inline: -20px; border-radius: 14px; text-decoration: none; color: inherit; }
+  .plate + .plate { margin-top: 4px; }
+  .plate::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; opacity: 0; transition: opacity 250ms; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 9%, transparent), transparent 65%), color-mix(in srgb, var(--paper) 70%, transparent); box-shadow: inset 0 0 0 1px var(--rule); }
+  .plate:hover::before, .plate:focus-visible::before { opacity: 1; }
+  .plate .thumb { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 10px 4px; min-width: 0; transition: border-color 200ms, transform 300ms var(--ease-out); }
+  .plate:hover .thumb { border-color: var(--ink-3); transform: translateY(-2px); }
   .plate .thumb .t { font-family: var(--font-display); font-size: 0.72rem; color: var(--ink-3); margin: 0 4px 2px; }
   .plate h3 { font-size: 1.35rem; font-stretch: 108%; margin: 6px 0 10px; line-height: 1.2; }
   .plate p { color: var(--ink-2); margin-bottom: 12px; }
-  .plate .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--font-display); font-size: 0.82rem; color: var(--ink-3); }
+  .plate .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--font-display); font-size: 0.82rem; color: var(--ink-3); align-items: center; }
   .plate .meta b { color: var(--ink-2); font-weight: 600; }
+  .plate .go { color: var(--accent); font-weight: 600; display: inline-flex; gap: 6px; }
+  .plate .go .arr { transition: transform 220ms var(--ease-out); }
+  .plate:hover .go .arr { transform: translateX(4px); }
   .plate .text { min-width: 0; }
-  @media (max-width: 760px) { .plate { grid-template-columns: 1fr; gap: 18px; } }
-  .xp { margin-top: 8px; }
-  .xp-row { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 8px 32px; padding-block: 22px; border-bottom: 1px solid var(--rule); }
-  .xp-row .when { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-3); padding-top: 4px; }
+  @media (max-width: 760px) { .plate { grid-template-columns: 1fr; gap: 18px; padding: 22px 12px; margin-inline: -12px; } }
+  .xp { position: relative; margin-top: 18px; }
+  .xp .rail, .xp .rail-fill { position: absolute; left: 176px; top: 18px; bottom: 22px; width: 1px; }
+  .xp .rail { background: var(--rule); }
+  .xp .rail-fill { background: var(--accent); transform-origin: 0 0; transform: scaleY(0); }
+  .xp-row { position: relative; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 8px 56px; padding-block: 18px 22px; }
+  .xp-row::after { content: ""; position: absolute; left: 171px; top: 22px; width: 11px; height: 11px; border-radius: 2px; background: var(--bg); border: 1px solid var(--ink-3); transition: background-color 250ms, border-color 250ms, transform 300ms var(--ease-out); }
+  .xp-row.reached::after { background: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+  .xp-row .when { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-3); padding-top: 4px; text-align: right; transition: color 250ms; }
+  .xp-row.reached .when { color: var(--ink); }
   .xp-row h3 { margin: 0; font-size: 1.08rem; }
   .xp-row .role { font-family: var(--font-display); font-size: 0.92rem; color: var(--ink-2); margin-top: 3px; }
   .xp-row p { color: var(--ink-2); font-size: 1rem; margin: 8px 0 0; max-width: 62ch; }
-  @media (max-width: 640px) { .xp-row { grid-template-columns: 1fr; } }
-  .email { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); }
-  .email button { font: inherit; font-size: 0.8rem; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 3px 9px; cursor: pointer; }
-  .bg { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px 40px; margin-top: 24px; }
-  .bg > div { min-width: 0; }
-  .bg h3 { margin: 6px 0 6px; font-size: 1.05rem; }
-  .bg p { color: var(--ink-2); font-size: 1rem; margin-bottom: 0.4em; }
+  @media (max-width: 640px) {
+    .xp .rail, .xp .rail-fill { left: 5px; }
+    .xp-row { grid-template-columns: 1fr; padding-left: 28px; gap: 4px; }
+    .xp-row::after { left: 0; }
+    .xp-row .when { text-align: left; }
+  }
 </style>
 </head><body>
+<canvas id="life" aria-hidden="true"></canvas>
 <header class="bar"><div class="wrap">
-  <a class="mark" href="index.html"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 4.5 L17.2 15.5 L4.8 15.5 Z" stroke-linejoin="round" opacity=".55"/></g><g fill="var(--accent)"><circle cx="11" cy="4.5" r="3"/><circle cx="17.2" cy="15.5" r="3"/><circle cx="4.8" cy="15.5" r="3"/></g></svg>Jad Almajnouni</a>
-  <nav class="nav" aria-label="Site"><a href="index.html#projects">Projects</a><a href="index.html#background">Experience</a><a href="https://github.com/jadmycrazy">GitHub</a></nav>
-</div></header>
+  <a class="mark" href="index.html" aria-label="Jad Almajnouni, home"><svg class="glider" width="22" height="18" viewBox="0 0 24 18" aria-hidden="true"><rect x="6" y="0" width="5" height="5" rx="1"/><rect x="12" y="6" width="5" height="5" rx="1"/><rect x="0" y="12" width="5" height="5" rx="1"/><rect x="6" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>Jad Almajnouni</a>
+  <nav class="nav" aria-label="Site"><a href="index.html#projects" data-sec="projects">Projects</a><a href="index.html#background" data-sec="background">Experience</a><a href="https://github.com/jadmycrazy">GitHub</a><span class="nav-ind" id="navInd"></span></nav>
+</div><div class="read-prog" id="readProg"></div></header>
+<div class="life-stat" id="lifeStat"><span class="txt">B3/S23</span><button type="button" aria-pressed="false">Pause</button></div>
 
-<main class="wrap">
-  <section class="hero">
-    <div>
-      <div class="eyebrow">Biomedical Engineering + Computer Science · Duke University</div>
-      <h1 style="margin-top:16px">Jad Almajnouni</h1>
-      <p class="lead">I build optimization and simulation models for medical decisions: who gets matched for a kidney, how to dose an antibiotic, how to split a course of radiation.</p>
-      <p class="sub">First-year BME and CS student at Duke and an undergraduate researcher in the Tomaras Lab at the Duke Human Vaccine Institute. Before Duke, I studied antibody responses in pancreatic cancer at the Ragon Institute of Mass General Brigham, MIT, and Harvard.</p>
-      <div class="links"><a href="#projects">Projects</a><a href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn</a><a href="https://github.com/jadmycrazy">GitHub</a><span class="email"><span class="mono" id="emailText">jad.almajnouni@duke.edu</span><button type="button" id="copyEmail">Copy</button></span></div>
-    </div>
-    <div class="hero-fig">
-      <div class="chart" id="heroNet"></div>
-      <div class="cap">36 incompatible donor-patient pairs. Green cycles: the transplants an integer program picks.</div>
+<main class="wrap" data-life="home">
+  <section class="hero intro">
+    <div class="eyebrow">Biomedical Engineering + Computer Science · Duke University</div>
+    <h1>Jad Almajnouni</h1>
+    <p class="lead">I build optimization and simulation models for medical decisions: who gets matched for a kidney, how to dose an antibiotic, how to split a course of radiation.</p>
+    <p class="sub">First-year BME and CS student at Duke and an undergraduate researcher in the Tomaras Lab at the Duke Human Vaccine Institute. Before Duke, I studied antibody responses in pancreatic cancer at the Ragon Institute of Mass General Brigham, MIT, and Harvard.</p>
+    <div class="links">
+      <a class="btn primary" href="#projects">See projects <span class="arr" aria-hidden="true">↓</span></a>
+      <a class="btn" href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn <span class="arr" aria-hidden="true">↗</span></a>
+      <a class="btn" href="https://github.com/jadmycrazy">GitHub <span class="arr" aria-hidden="true">↗</span></a>
+      <button class="btn" type="button" id="copyEmail" data-email="jad.almajnouni@duke.edu"><span class="mono" id="emailText">jad.almajnouni@duke.edu</span><span class="swap" aria-live="polite"><span>Copy</span><span class="ok-copied">Copied</span><span class="ok-selected">Selected</span></span></button>
     </div>
   </section>
 
@@ -75,7 +96,7 @@
         <div class="eyebrow">01 · Transplantation</div>
         <h3>Kidney exchange: how many transplants is an optimizer worth?</h3>
         <p>Simulates kidney paired-donation pools with the Saidman generator and chooses exchange cycles with an integer program. In pools of 100 pairs the optimizer matched 55% of patients against 43% for a first-come matcher, 30% more transplants with no new donors. Blood type O patients were matched at a third of the rate of type A.</p>
-        <div class="meta"><span><b>Methods</b> cycle-formulation MILP (HiGHS), DFS cycle search, Monte Carlo pools</span><span>Interactive figure</span></div>
+        <div class="meta"><span><b>Methods</b> cycle-formulation MILP (HiGHS), DFS cycle search, Monte Carlo pools</span><span class="go">Read the write-up <span class="arr" aria-hidden="true">→</span></span></div>
       </div>
     </a>
 
@@ -85,7 +106,7 @@
         <div class="eyebrow">02 · Infectious disease</div>
         <h3>Dosing antibiotics with the immune system in the loop</h3>
         <p>A PK/PD model with sensitive and resistant bacteria and a saturating innate immune response. Searching 1,000 regimens, a working immune system cut the drug needed for safe clearance 12-fold, and the requirement jumped 4.6-fold between 80% and 60% immune strength.</p>
-        <div class="meta"><span><b>Methods</b> ODE model, RK4 integration, regimen grid search, mutant selection window</span><span>In-browser simulator</span></div>
+        <div class="meta"><span><b>Methods</b> ODE model, RK4 integration, regimen grid search, mutant selection window</span><span class="go">Read the write-up <span class="arr" aria-hidden="true">→</span></span></div>
       </div>
     </a>
 
@@ -95,14 +116,14 @@
         <div class="eyebrow">03 · Radiation oncology</div>
         <h3>How many fractions? Choosing a radiotherapy schedule with the linear-quadratic model</h3>
         <p>Maximizes tumor dose at a fixed limit on late healthy-tissue damage. The optimizer recovers the direction of recent practice: about 6 large fractions for prostate, near-indifference for breast, and a 16-fraction head and neck course that finishes before tumor repopulation begins.</p>
-        <div class="meta"><span><b>Methods</b> LQ model, constrained optimization, analytical boundary check</span><span>Interactive figure</span></div>
+        <div class="meta"><span><b>Methods</b> LQ model, constrained optimization, analytical boundary check</span><span class="go">Read the write-up <span class="arr" aria-hidden="true">→</span></span></div>
       </div>
     </a>
   </section>
 
   <section id="background">
     <div class="sec-head"><h2>Experience</h2><span class="label">Research, education, honors</span></div>
-    <div class="xp">
+    <div class="xp"><div class="rail"></div><div class="rail-fill"></div>
       <div class="xp-row"><div class="when num">Oct 2026 – now</div><div><h3>Tomaras Lab, Duke Human Vaccine Institute</h3><div class="role">Undergraduate Student Researcher</div><p>Research in the lab of Dr. Georgia Tomaras at the Duke Human Vaccine Institute and the Duke Center for Human Systems Immunology, which studies the mechanisms of protective immune responses.</p></div></div>
       <div class="xp-row"><div class="when num">Jun – Aug 2025</div><div><h3>Ragon Institute of Mass General Brigham, MIT, and Harvard</h3><div class="role">Research Intern, through MIT's Research Science Institute</div><p>Immunology research on pancreatic cancer. Analyzed antibody responses with systems serology and presented the findings at the RSI symposium at MIT.</p></div></div>
       <div class="xp-row"><div class="when num">2026 – 2030</div><div><h3>Duke University, Pratt School of Engineering</h3><div class="role">B.S.E. Biomedical Engineering and Computer Science</div></div></div>
@@ -111,16 +132,16 @@
     </div>
   </section>
 </main>
-<footer class="wrap foot"><span>Jad Almajnouni · <span class="mono">jad.almajnouni@duke.edu</span></span><span><a href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn</a> · <a href="https://github.com/jadmycrazy">GitHub</a></span></footer>
+<footer class="wrap foot"><span>Jad Almajnouni · <span class="mono">jad.almajnouni@duke.edu</span></span><span>Background: Conway's Game of Life. Move the cursor to stir it, click empty space to seed it.</span><span><a href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn</a> · <a href="https://github.com/jadmycrazy">GitHub</a></span></footer>
 
 <script src="assets/charts.js"></script>
-<script src="assets/kidney-net.js"></script>
+<script src="assets/life.js"></script>
+<script src="assets/site.js"></script>
 <script>
 (async function () {
   const { line, css } = Charts;
   const [K, A, R] = await Promise.all(["kidney", "antibiotic", "radiotherapy"].map((n) => fetch("data/" + n + ".json").then((r) => r.json())));
   function draw() {
-    drawPool(document.getElementById("heroNet"), K.examples[0], "opt3", { aria: "Example kidney exchange pool with optimal cycles" });
     const small = { height: 170, margin: { t: 8, l: 40, b: 26 } };
     line(document.getElementById("t1"), Object.assign({}, small, { margin: { t: 8, l: 40, b: 26, r: 70 }, direct: true,
       series: [["opt3", "Optimal", "--s1"], ["greedy3", "First-come", "--s2"]].map(([k, n, c]) => ({ name: n, color: css(c), pts: K.sizes.map((r) => [r.n, r[k] * 100]), fmt: (v) => v.toFixed(1) + "%" })),
@@ -134,8 +155,6 @@
       x: { min: 1, max: 40, ticks: [1, 16, 40] }, y: { min: 60, max: 90, ticks: [60, 75, 90] }, tipX: (x) => Math.round(x) + " fractions" }));
   }
   draw(); Charts.rerenderOnTheme(draw);
-  const cb = document.getElementById("copyEmail");
-  cb.onclick = async () => { try { await navigator.clipboard.writeText("jad.almajnouni@duke.edu"); cb.textContent = "Copied"; } catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById("emailText")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); cb.textContent = "Selected"; } setTimeout(() => (cb.textContent = "Copy"), 1600); };
   Charts.onResize(draw).observe(document.getElementById("t1"));
 })();
 </script>

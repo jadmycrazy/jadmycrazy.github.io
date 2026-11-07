@@ -3,8 +3,8 @@
 <meta name="description" content="Using the linear-quadratic model to find the number of radiation fractions that maximizes tumor dose at a fixed level of normal-tissue damage.">
 </head><body>
 {{BAR}}
-<main class="wrap">
-  <header class="article-head">
+<main class="wrap article-body" data-life="article">
+  <header class="article-head intro">
     <div class="eyebrow">Project 03 · Optimization · Radiation oncology</div>
     <h1>How many fractions? Choosing a radiotherapy schedule with the linear-quadratic model</h1>
     <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/radiotherapy-fractionation">Code on GitHub</a></span><span>Python · LQ model</span></div>
@@ -102,6 +102,8 @@ subject to  healthy BED ≤ 116.7 Gy₃   (35 × 2 Gy with s = 1)
 </main>
 {{FOOT}}
 <script src="assets/charts.js"></script>
+<script src="assets/life.js"></script>
+<script src="assets/site.js"></script>
 <script>
 (async function () {
   const { line, grid, css, el } = Charts;

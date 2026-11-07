@@ -11,13 +11,15 @@
 
 <meta name="description" content="An integer program that finds 30% more transplants than a first-come matcher in simulated kidney paired-donation pools.">
 </head><body>
+<canvas id="life" aria-hidden="true"></canvas>
 <header class="bar"><div class="wrap">
-  <a class="mark" href="index.html"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6"><path d="M11 4.5 L17.2 15.5 L4.8 15.5 Z" stroke-linejoin="round" opacity=".55"/></g><g fill="var(--accent)"><circle cx="11" cy="4.5" r="3"/><circle cx="17.2" cy="15.5" r="3"/><circle cx="4.8" cy="15.5" r="3"/></g></svg>Jad Almajnouni</a>
-  <nav class="nav" aria-label="Site"><a href="index.html#projects">Projects</a><a href="index.html#background">Experience</a><a href="https://github.com/jadmycrazy">GitHub</a></nav>
-</div></header>
+  <a class="mark" href="index.html" aria-label="Jad Almajnouni, home"><svg class="glider" width="22" height="18" viewBox="0 0 24 18" aria-hidden="true"><rect x="6" y="0" width="5" height="5" rx="1"/><rect x="12" y="6" width="5" height="5" rx="1"/><rect x="0" y="12" width="5" height="5" rx="1"/><rect x="6" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>Jad Almajnouni</a>
+  <nav class="nav" aria-label="Site"><a href="index.html#projects" data-sec="projects">Projects</a><a href="index.html#background" data-sec="background">Experience</a><a href="https://github.com/jadmycrazy">GitHub</a><span class="nav-ind" id="navInd"></span></nav>
+</div><div class="read-prog" id="readProg"></div></header>
+<div class="life-stat" id="lifeStat"><span class="txt">B3/S23</span><button type="button" aria-pressed="false">Pause</button></div>
 
-<main class="wrap">
-  <header class="article-head">
+<main class="wrap article-body" data-life="article">
+  <header class="article-head intro">
     <div class="eyebrow">Project 01 · Optimization · Transplantation</div>
     <h1>Kidney exchange: how many transplants is an optimizer worth?</h1>
     <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/kidney-exchange-optimizer">Code on GitHub</a></span><span>Python · HiGHS</span></div>
@@ -109,9 +111,11 @@ subject to  Σ_{c ∋ i} x_c ≤ 1   for every pair i   (each pair in at most on
   </article>
   <nav class="next"><a href="index.html">All projects</a><a href="antibiotic.html">Next: antibiotic dosing</a></nav>
 </main>
-<footer class="wrap foot"><span>Jad Almajnouni · <span class="mono">jad.almajnouni@duke.edu</span></span><span><a href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn</a> · <a href="https://github.com/jadmycrazy">GitHub</a></span></footer>
+<footer class="wrap foot"><span>Jad Almajnouni · <span class="mono">jad.almajnouni@duke.edu</span></span><span>Background: Conway's Game of Life. Move the cursor to stir it, click empty space to seed it.</span><span><a href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn</a> · <a href="https://github.com/jadmycrazy">GitHub</a></span></footer>
 
 <script src="assets/charts.js"></script>
+<script src="assets/life.js"></script>
+<script src="assets/site.js"></script>
 <script src="assets/kidney-net.js"></script>
 <script>
 (async function () {

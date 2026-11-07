@@ -51,7 +51,7 @@
     const sx = (v) => m.l + ((v - X.min) / (X.max - X.min)) * (W - m.l - m.r);
     const sy = (v) => { let u = Y.log ? Math.log10(Math.max(v, Y.min)) : v; u = Math.min(Math.max(u, ylo), yhi); return H - m.b - ((u - ylo) / (yhi - ylo)) * (H - m.t - m.b); };
     (opts.bands || []).forEach((b) => {
-      const r = el("rect", { x: m.l, width: W - m.l - m.r, y: sy(b.y1), height: Math.max(0, sy(b.y0) - sy(b.y1)), fill: b.fill }, svg);
+      const r = el("rect", { x: m.l, width: W - m.l - m.r, y: sy(b.y1), height: Math.max(0, sy(b.y0) - sy(b.y1)), fill: b.fill, class: "fade" }, svg);
       if (b.label) txt(svg, m.l + 8, sy(b.y1) + 14, b.label, { "font-size": 10.5, fill: css("--ink-2") });
     });
     const yt = Y.ticks || niceTicks(Y.min, Y.max, 5);
@@ -69,13 +69,15 @@
     opts.series.forEach((s) => {
       if (!s.pts.length) return;
       const d = s.pts.map((p, i) => (i ? "L" : "M") + sx(p[0]).toFixed(1) + " " + sy(p[1]).toFixed(1)).join("");
-      el("path", { d, fill: "none", stroke: s.color, "stroke-width": s.width || 2, "stroke-linejoin": "round", "stroke-linecap": "round", "stroke-dasharray": s.dash || "" }, svg);
-      (s.dots || []).forEach((p) => el("circle", { cx: sx(p[0]), cy: sy(p[1]), r: 5, fill: s.color, stroke: css("--paper"), "stroke-width": 2 }, svg));
+      const pa = { d, fill: "none", stroke: s.color, "stroke-width": s.width || 2, "stroke-linejoin": "round", "stroke-linecap": "round" };
+      if (s.dash) Object.assign(pa, { "stroke-dasharray": s.dash, class: "fade" }); else Object.assign(pa, { pathLength: 1, class: "draw" });
+      el("path", pa, svg);
+      (s.dots || []).forEach((p, j) => el("circle", { cx: sx(p[0]), cy: sy(p[1]), r: 5, fill: s.color, stroke: css("--paper"), "stroke-width": 2, class: "pop", style: `--d:${500 + j * 70}ms` }, svg));
       if (opts.direct && s.name) { const p = s.pts[s.pts.length - 1]; lab.push({ y: sy(p[1]), x: sx(p[0]), s }); }
     });
     lab.sort((a, b) => a.y - b.y);
     for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 14) lab[i].y = lab[i - 1].y + 14;
-    lab.forEach((l) => txt(svg, l.x + 8, l.y + 4, l.s.name, { class: "direct" }));
+    lab.forEach((l) => txt(svg, l.x + 8, l.y + 4, l.s.name, { class: "direct fade" }));
     // hover
     const cross = el("line", { y1: m.t, y2: H - m.b, stroke: css("--ink-3"), "stroke-width": 1, visibility: "hidden" }, svg);
     const dots = opts.series.map((s) => el("circle", { r: 4.5, fill: s.color, stroke: css("--paper"), "stroke-width": 2, visibility: "hidden" }, svg));
@@ -112,7 +114,7 @@
       txt(svg, m.l - 8, m.t + r * ch + ch / 2 + 4, opts.rowLabels[r], { "text-anchor": "end" });
       for (let c = 0; c < opts.cols; c++) {
         const info = opts.cell(r, c);
-        const rect = el("rect", { x: m.l + c * cw + gap / 2, y: m.t + r * ch + gap / 2, width: Math.max(0.5, cw - gap), height: Math.max(0.5, ch - gap), fill: info.fill, rx: Math.min(2, cw / 4) }, svg);
+        const rect = el("rect", { x: m.l + c * cw + gap / 2, y: m.t + r * ch + gap / 2, width: Math.max(0.5, cw - gap), height: Math.max(0.5, ch - gap), fill: info.fill, rx: Math.min(2, cw / 4), class: "birth", style: `--d:${Math.round((c / opts.cols) * 700 + r * 30)}ms` }, svg);
         if (info.mark) el("circle", { cx: m.l + c * cw + cw / 2, cy: m.t + r * ch + ch / 2, r: Math.min(cw, ch) / 2.6 + 2, fill: "none", stroke: css("--ink"), "stroke-width": 2 }, svg);
         rect.addEventListener("pointermove", () => { tipRows(tip, info.tip[0], info.tip[1]); const s = host.clientWidth / W; placeTip(tip, host, (m.l + c * cw + cw / 2) * s, (m.t + r * ch) * s); rect.setAttribute("stroke", css("--ink")); });
         rect.addEventListener("pointerleave", () => { tip.hidden = true; rect.removeAttribute("stroke"); });
@@ -137,7 +139,7 @@
       const y = m.t + i * rowH + 6;
       txt(svg, m.l - 10, y + 15, it.label, { "text-anchor": "end", fill: css("--ink-2"), "font-size": 12 });
       const w = Math.max(2, sx(it.value) - m.l);
-      const r = el("rect", { x: m.l, y, width: w, height: 20, rx: 3, fill: it.color }, svg);
+      const r = el("rect", { x: m.l, y, width: w, height: 20, rx: 3, fill: it.color, class: "grow", style: `--d:${i * 90}ms` }, svg);
       txt(svg, m.l + w + 8, y + 15, opts.fmt(it.value), { fill: css("--ink"), "font-weight": 650, "font-size": 12 });
       const hit = el("rect", { x: 0, y: y - 6, width: W, height: rowH, fill: "transparent" }, svg);
       hit.addEventListener("pointermove", () => { tipRows(tip, it.label, [{ color: it.color, value: opts.fmt(it.value), name: it.note || "" }]); const s = host.clientWidth / W; placeTip(tip, host, (m.l + w / 2) * s, y * s); });

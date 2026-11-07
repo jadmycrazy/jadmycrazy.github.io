@@ -3,8 +3,8 @@
 <meta name="description" content="A pharmacokinetic and immune model that searches 1,000 antibiotic regimens for the least drug that clears an infection without selecting resistance.">
 </head><body>
 {{BAR}}
-<main class="wrap">
-  <header class="article-head">
+<main class="wrap article-body" data-life="article">
+  <header class="article-head intro">
     <div class="eyebrow">Project 02 · Simulation · Infectious disease</div>
     <h1>Dosing antibiotics with the immune system in the loop</h1>
     <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/antibiotic-immune-dosing">Code on GitHub</a></span><span>Python · ODE modeling</span></div>
@@ -100,6 +100,8 @@ C(t)  = Σ_doses (dose/V)·exp(−k_e (t − t_i))     half-life 2 h, V = 20 L</
 </main>
 {{FOOT}}
 <script src="assets/charts.js"></script>
+<script src="assets/life.js"></script>
+<script src="assets/site.js"></script>
 <script>
 (async function () {
   const { line, grid, hbars, css } = Charts;
