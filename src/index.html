@@ -7,7 +7,9 @@
   .hero { padding-block: clamp(56px, 12vh, 120px) 56px; max-width: 640px; }
   .hero h1 { font-size: clamp(2.8rem, 8.4vw, 5.6rem); font-stretch: 122%; margin-top: 18px; }
   .hero .lead { font-size: clamp(1.2rem, 2.2vw, 1.45rem); line-height: 1.45; margin-top: 26px; max-width: 34ch; color: var(--ink); }
-  .hero .sub { color: var(--ink-2); margin-top: 18px; max-width: 52ch; }
+  .hero .sub { color: var(--ink-2); margin-top: 18px; max-width: 56ch; }
+  .hero a.u { color: inherit; text-decoration: none; border-bottom: 1px solid var(--ink-3); padding-bottom: 1px; transition: border-color 150ms, color 150ms; }
+  .hero a.u:hover { border-color: var(--accent); color: var(--accent); }
   .links { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-family: var(--font-display); font-size: 0.92rem; margin-top: 30px; }
   .btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding-inline: 15px; border-radius: 9px; border: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 85%, transparent); color: var(--ink); text-decoration: none; transition: transform 140ms var(--ease-out), border-color 150ms, background-color 150ms; }
   .btn:hover { border-color: var(--ink-3); text-decoration: none; }
@@ -62,8 +64,8 @@
   <section class="hero intro">
     <div class="eyebrow">Biomedical Engineering + Computer Science · Duke University</div>
     <h1>Jad Almajnouni</h1>
-    <p class="lead">I build optimization and simulation models for medical decisions: who gets matched for a kidney, how to dose an antibiotic, how to split a course of radiation.</p>
-    <p class="sub">First-year BME and CS student at Duke and an undergraduate researcher in the Tomaras Lab at the Duke Human Vaccine Institute. Before Duke, I studied antibody responses in pancreatic cancer at the Ragon Institute of Mass General Brigham, MIT, and Harvard.</p>
+    <p class="lead">I research vaccine immunology at the <a class="u" href="https://dhvi.duke.edu">Duke Human Vaccine Institute</a> and build optimization models for medicine at Duke.</p>
+    <p class="sub">At the Tomaras Lab I work with Dr. Georgia Tomaras's group on how protective immune responses form. At Duke I study Biomedical Engineering and Computer Science, and build models for medical decisions: <a class="u" href="kidney.html">kidney exchange matching</a>, <a class="u" href="antibiotic.html">antibiotic dosing with the immune system in the loop</a>, and <a class="u" href="radiotherapy.html">radiotherapy scheduling</a>. Earlier, I analyzed antibody responses in pancreatic cancer at the <a class="u" href="https://ragoninstitute.org">Ragon Institute</a> of Mass General Brigham, MIT, and Harvard, through MIT's Research Science Institute.</p>
     <div class="links">
       <a class="btn primary" href="#projects">See projects <span class="arr" aria-hidden="true">↓</span></a>
       <a class="btn" href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn <span class="arr" aria-hidden="true">↗</span></a>
