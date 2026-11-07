@@ -20,23 +20,9 @@
   --font-body: "Newsreader", "Iowan Old Style", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --col: 68ch;
+  color-scheme: light;
   --wide: 980px;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0e1412; --paper: #141a18; --ink: #e5ebe8; --ink-2: #b2bdb9; --ink-3: #8b9792;
-    --rule: #2a3431; --grid: rgba(200, 235, 225, 0.04); --accent: #5cc7a6; --accent-wash: #16302a;
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --muted-mark: #3c4845;
-    --ok: #4cc27a; --bad: #f07167; --warn: #e3a336; --life-ink: 214,232,224; --life-new: 92,199,166; --life-ink-a: 0.10; --life-new-a: 0.42; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0e1412; --paper: #141a18; --ink: #e5ebe8; --ink-2: #b2bdb9; --ink-3: #8b9792;
-  --rule: #2a3431; --grid: rgba(200, 235, 225, 0.04); --accent: #5cc7a6; --accent-wash: #16302a;
-  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --muted-mark: #3c4845;
-  --ok: #4cc27a; --bad: #f07167; --warn: #e3a336; --life-ink: 214,232,224; --life-new: 92,199,166; --life-ink-a: 0.10; --life-new-a: 0.42; color-scheme: dark;
-}
-
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
