@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en"><head>
+<title>Stochastic HIV Infection · Jad Almajnouni</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+
+<meta name="description" content="Gillespie simulation and stochastic differential equations for the first days of HIV infection: why most exposures die out, and how much a neutralizing antibody changes the odds.">
+</head><body>
+<canvas id="life" aria-hidden="true"></canvas>
+<header class="bar"><div class="wrap">
+  <a class="mark" href="index.html" aria-label="Jad Almajnouni, home"><svg class="glider" width="22" height="18" viewBox="0 0 24 18" aria-hidden="true"><rect x="6" y="0" width="5" height="5" rx="1"/><rect x="12" y="6" width="5" height="5" rx="1"/><rect x="0" y="12" width="5" height="5" rx="1"/><rect x="6" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>Jad Almajnouni</a>
+  <nav class="nav" aria-label="Site"><a href="index.html#projects" data-sec="projects">Projects</a><a href="index.html#background" data-sec="background">Experience</a><a href="https://github.com/jadmycrazy">GitHub</a><span class="nav-ind" id="navInd"></span></nav>
+</div><div class="read-prog" id="readProg"></div></header>
+<div class="life-stat" id="lifeStat"><span class="txt">B3/S23</span><button type="button" aria-pressed="false">Pause</button></div>
+
+<main class="wrap article-body" data-life="article">
+  <header class="article-head intro">
+    <div class="eyebrow">Project 01 · Stochastic simulation · Virology</div>
+    <h1>Why most HIV exposures never become infections</h1>
+    <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/stochastic-viral-dynamics">Code on GitHub</a></span></div>
+    <p class="dek">A deterministic model says any virus with a reproduction number above one always takes off. Real infections start from a handful of virions, where chance decides. I simulated the first days of HIV infection with exact stochastic simulation and stochastic differential equations to measure how often an exposure dies out, and how much a neutralizing antibody lowers the odds.</p>
+  </header>
+
+  <section class="findings" aria-label="Key results">
+    <div class="finding"><div class="big">14.6%</div><div class="what">chance that a single virion reaching target cells starts an infection, even with R₀ = 8</div></div>
+    <div class="finding"><div class="big">18×</div><div class="what">lower per-virion risk with an antibody that blocks 85% of infection events</div></div>
+    <div class="finding"><div class="big">0.75 d</div><div class="what">earlier detection than the deterministic model predicts, among infections that take hold</div></div>
+  </section>
+
+  <figure class="fig" id="fig-sim">
+    <div class="fig-head"><div class="fig-title">Figure 1. Thirty simulated exposures</div><span class="label">Interactive · runs in your browser</span></div>
+    <div class="controls">
+      <div class="control"><label for="v0">Virions reaching target cells <output id="v0Out"></output></label><input id="v0" type="range" min="0" max="2" step="0.05" value="0"></div>
+      <div class="control"><label for="phi">Antibody neutralization <output id="phiOut"></output></label><input id="phi" type="range" min="0" max="95" step="5" value="0"></div>
+      <div><button class="runbtn" type="button" id="rerun">Run again</button></div>
+    </div>
+    <div class="readout" id="simReadout"></div>
+    <div class="legend" id="simLegend"></div>
+    <div class="chart" id="simChart"></div>
+    <figcaption><b>Each line is one exposure</b>, tracking virions plus infected cells. Most die out within hours (gray lines, with a dot where the last virion or infected cell disappears). The ones that survive the first few generations grow almost deterministically to a peak a week to ten days after exposure. Below 200 virus particles and infected cells, the simulation is exact (Gillespie); above that, it switches to the chemical Langevin equation, a stochastic differential equation.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>The question</h2>
+    <p>The standard model of HIV in the body is a set of ordinary differential equations: target cells get infected, infected cells make virus, virus gets cleared. Early in infection its key number is R₀, the average number of newly infected cells each infected cell produces. Estimates for HIV put R₀ around 8. In the deterministic model, any R₀ above 1 means the infection always grows.</p>
+    <p>That can't be the whole story. The chance of HIV transmission per sexual exposure is well under 1%, and about three quarters of heterosexual infections trace back to a single founder virus (Keele et al. 2008). At the start of an infection there are only a few virions, and each one is far more likely to be cleared than to infect a cell. The early phase is a game of chance, so it needs a stochastic model.</p>
+
+    <h2>Model</h2>
+    <p>I track four populations: target cells (T), infected cells in the eclipse phase before they make virus (E), productively infected cells (I), and infectious virions (V). Each arrow below is a random event that happens at the listed rate.</p>
+    <div class="eq">infection     T + V → E          rate β·T·V      (antibody blocks a fraction φ)
+eclipse ends  E → I              rate k·E         k = 1 / day
+cell death    I → ∅              rate δ·I         δ = 1 / day
+production    I → I + V          rate p·I
+clearance     V → ∅              rate c·V         c = 23 / day
+target cells  ∅ → T,  T → ∅      rate λ,  d_T·T</div>
+    <p>Clearance, death and eclipse rates are standard estimates from HIV studies (Ramratnam et al. 1999; Markowitz et al. 2003). I set the virion production and infection rates so that R₀ = 8 (Ribeiro et al. 2010). A neutralizing antibody is modeled as blocking a fixed fraction φ of infection events.</p>
+
+    <h3>Three ways to solve it</h3>
+    <ul>
+      <li><b>Exact stochastic simulation.</b> The Gillespie algorithm draws the time to the next event and which event it is, one at a time. It is exact but slow once there are thousands of particles.</li>
+      <li><b>A stochastic differential equation.</b> Once populations are large, each reaction fires many times per small time step, and the count of firings is close to normal. That gives the chemical Langevin equation, which I integrate with the Euler–Maruyama method. The noise term for each reaction scales with the square root of its rate.</li>
+      <li><b>A closed-form check.</b> While target cells are plentiful, each virion's lineage is a branching process, and the probability that it dies out solves a fixed-point equation. This gives the exact answer the simulations should match.</li>
+    </ul>
+    <p>The full simulation is a hybrid: Gillespie until the infection reaches 200 particles and infected cells, then the SDE. At 200, the chance of extinction is negligible, so nothing is lost by switching.</p>
+  </article>
+
+  <figure class="fig">
+    <div class="fig-head"><div class="fig-title">Table 1. Gillespie simulation against the branching-process formula</div></div>
+    <div class="scroll"><table class="data" id="checkTable"></table></div>
+    <figcaption><b>Every simulated probability falls within two standard errors of the formula.</b> 20,000 simulated exposures per row for one virion, 4,000 for ten.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>Results</h2>
+    <h3>Most single-virion exposures die out</h3>
+    <p>With R₀ = 8, a single virion reaching target cells starts an infection only 14.6% of the time. The reason is the first step. A free virion is cleared at 23 per day and infects at under 5 per day, so 83% of virions are cleared before they ever infect a cell. Even an infected cell's lineage can fail if its first few progeny are cleared. Ten virions establish infection 79% of the time, and thirty make it 99% certain.</p>
+  </article>
+
+  <figure class="fig" id="fig-dose">
+    <div class="fig-head"><div class="fig-title">Figure 2. Chance an exposure becomes an infection, by inoculum size</div></div>
+    <div class="legend" id="doseLegend"></div>
+    <div class="chart" id="doseChart"></div>
+    <figcaption><b>Neutralization shifts the whole curve to the right.</b> With 85% of infection events blocked, it takes about 19 virions to carry the risk of a single virion without antibody. Curves are the exact branching-process result.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h3>Antibodies cut risk well before they stop infection outright</h3>
+    <p>An antibody that blocks infection events lowers R₀. Once it blocks more than 89.4% of events, R₀ falls below 1 and no exposure can grow. But the per-virion risk falls steeply long before that point: 2.1-fold at 50% neutralization, 8.3-fold at 80%, and 18-fold at 85%. Each blocked infection event gives the immune system's clearance another chance to win the race.</p>
+    <p>This is consistent with what the Antibody Mediated Prevention trials found for the broadly neutralizing antibody VRC01 (Corey et al. 2021). It prevented infection by viruses it neutralized potently, and did little against viruses it neutralized weakly. In this model, the difference between 80% and 90% neutralization is the difference between partial protection and complete protection.</p>
+  </article>
+
+  <figure class="fig" id="fig-neut">
+    <div class="fig-head"><div class="fig-title">Figure 3. Per-virion establishment probability and R₀ against neutralization</div></div>
+    <div class="legend" id="neutLegend"></div>
+    <div class="chart" id="neutChart"></div>
+    <figcaption><b>Risk drops to zero at 89.4% neutralization, where R₀ crosses 1.</b> Most of the fall happens before that threshold.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h3>Infections that take hold run ahead of the deterministic model</h3>
+    <p>I ran single-virion exposures until 600 had established infection (that took 4,130 exposures, an establishment rate of 14.5%, matching the formula). Among those 600, infectious virus reached 1,000 per mL at a median of 5.25 days, against 6.0 days for the deterministic model started from one virion. The middle 90% ranged from 4.0 to 7.75 days.</p>
+    <p>The stochastic infections are faster because they are selected. The ones that survive are the ones that got lucky early, with infected cells that happened to release virus quickly. The deterministic model averages over lineages that mostly die, so it underestimates how fast a surviving infection grows. This matters for the window period between exposure and a positive test.</p>
+  </article>
+
+  <figure class="fig" id="fig-traj">
+    <div class="fig-head"><div class="fig-title">Figure 4. Viral load in 600 established infections</div></div>
+    <div class="legend" id="trajLegend"></div>
+    <div class="chart" id="trajChart"></div>
+    <figcaption><b>Stochastic infections peak earlier than the deterministic curve.</b> Shaded bands show the middle 50% and 90% of trajectories. After the peak, target cells run out and every trajectory settles to a similar level, since this model has no adaptive immune response.</figcaption>
+  </figure>
+
+  <article class="prose">
+    <h2>What this leaves out</h2>
+    <ul>
+      <li><b>The mucosal barrier.</b> The model starts once virions reach target cells. Most of the protection against sexual transmission happens before that, at the mucosa.</li>
+      <li><b>Antibody dynamics.</b> Neutralization is a fixed fraction here. In reality it depends on antibody concentration at the site of exposure, which varies with time since dosing, and on how sensitive each viral strain is.</li>
+      <li><b>Other immune responses.</b> There are no T cell or innate responses, which is why viral load settles at a level set only by target-cell supply after the peak.</li>
+      <li><b>Burst versus continuous release.</b> Infected cells release virions one at a time. Pearson et al. (2011) showed that burst release changes extinction probabilities, which would be a direct extension.</li>
+    </ul>
+
+    <h2>Code</h2>
+    <p>Repository: <a href="https://github.com/jadmycrazy/stochastic-viral-dynamics">github.com/jadmycrazy/stochastic-viral-dynamics</a>. The model, Gillespie simulator, branching-process solution and vectorized Euler–Maruyama integrator are in <code>viral/model.py</code>; <code>run_experiments.py</code> produces every number on this page in about 40 seconds. Tests check the simulator against the formula.</p>
+
+    <h2>References</h2>
+    <ol class="refs">
+      <li>Gillespie DT. Exact stochastic simulation of coupled chemical reactions. <i>Journal of Physical Chemistry</i>. 1977;81(25):2340-2361.</li>
+      <li>Gillespie DT. The chemical Langevin equation. <i>Journal of Chemical Physics</i>. 2000;113(1):297-306.</li>
+      <li>Pearson JE, Krapivsky P, Perelson AS. Stochastic theory of early viral infection: continuous versus burst production of virions. <i>PLoS Computational Biology</i>. 2011;7(2):e1001058.</li>
+      <li>Ribeiro RM, Qin L, Chavez LL, Li D, Self SG, Perelson AS. Estimation of the initial viral growth rate and basic reproductive number during acute HIV-1 infection. <i>Journal of Virology</i>. 2010;84(12):6096-6102.</li>
+      <li>Ramratnam B, Bonhoeffer S, Binley J, et al. Rapid production and clearance of HIV-1 and hepatitis C virus assessed by large volume plasma apheresis. <i>The Lancet</i>. 1999;354(9192):1782-1785.</li>
+      <li>Markowitz M, Louie M, Hurley A, et al. A novel antiviral intervention results in more accurate assessment of human immunodeficiency virus type 1 replication dynamics and T-cell decay in vivo. <i>Journal of Virology</i>. 2003;77(8):5037-5038.</li>
+      <li>Keele BF, Giorgi EE, Salazar-Gonzalez JF, et al. Identification and characterization of transmitted and early founder virus envelopes in primary HIV-1 infection. <i>PNAS</i>. 2008;105(21):7552-7557.</li>
+      <li>Corey L, Gilbert PB, Juraska M, et al. Two randomized trials of neutralizing antibodies to prevent HIV-1 acquisition. <i>New England Journal of Medicine</i>. 2021;384(11):1003-1014.</li>
+    </ol>
+  </article>
+  <nav class="next"><a href="index.html">All projects</a><a href="antibiotic.html">Next: antibiotic dosing</a></nav>
+</main>
+<footer class="wrap foot"><span>Jad Almajnouni · <span class="mono">jad.almajnouni@duke.edu</span></span><span>Background: Conway's Game of Life. Move the cursor to stir it, click empty space to seed it.</span><span><a href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn</a> · <a href="https://github.com/jadmycrazy">GitHub</a></span></footer>
+
+<script src="assets/charts.js"></script>
+<script src="assets/life.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(async function () {
+  const { line, css } = Charts;
+  const D = await (await fetch("data/viral.json")).json();
+  const P = D.params;
+  const sup = (e) => "10" + String(e).split("").map((c) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[+c]).join("");
+  const pct = (v, d = 1) => (v * 100).toFixed(d) + "%";
+  const qOf = (phi) => { const b = P.b * (1 - phi); let q = 0; for (let i = 0; i < 20000; i++) { const n = P.c / (P.c + b) + (b / (P.c + b)) * (P.delta / (P.delta + P.p * (1 - q))); if (Math.abs(n - q) < 1e-15) break; q = n; } return q; };
+  const R0 = (phi) => { const b = P.b * (1 - phi); return (P.p / P.delta) * b / (P.c + b); };
+
+  /* ---------- live hybrid simulator (Gillespie, then chemical Langevin) ---------- */
+  let gauss = null;
+  const randn = () => { if (gauss !== null) { const g = gauss; gauss = null; return g; } let u = 0, v = 0; while (!u) u = Math.random(); v = Math.random(); const r = Math.sqrt(-2 * Math.log(u)); gauss = r * Math.sin(2 * Math.PI * v); return r * Math.cos(2 * Math.PI * v); };
+  const expo = (rate) => -Math.log(1 - Math.random()) / rate;
+  function runOne(v0, phi, tEnd) {
+    const b = P.b * (1 - phi), beta = b / P.T0, lam = P.dT * P.T0, pts = [[0, v0]], tot = () => E + I + V;
+    let E = 0, I = 0, V = v0, t = 0, T = P.T0;
+    while (true) {
+      const a = [b * V, P.k * E, P.delta * I, P.p * I, P.c * V], a0 = a[0] + a[1] + a[2] + a[3] + a[4];
+      if (a0 === 0) { pts.push([t, 0]); return { est: false, pts, tEx: t }; }
+      t += expo(a0); if (t > tEnd) return { est: false, pts };
+      let u = Math.random() * a0;
+      if ((u -= a[0]) < 0) { V--; E++; } else if ((u -= a[1]) < 0) { E--; I++; } else if ((u -= a[2]) < 0) { I--; } else if ((u -= a[3]) < 0) { V++; } else { V--; }
+      pts.push([t, tot()]);
+      if (E + I + V >= 200) break;
+    }
+    const dt = 0.004, sq = Math.sqrt(dt); let next = t;
+    while (t < tEnd) {
+      const r = [beta * T * V, P.k * E, P.delta * I, P.p * I, P.c * V, lam, P.dT * T].map((x) => x * dt + Math.sqrt(Math.max(x, 0)) * sq * randn());
+      T = Math.max(0, T + r[5] - r[6] - r[0]); E = Math.max(0, E + r[0] - r[1]); I = Math.max(0, I + r[1] - r[2]); V = Math.max(0, V + r[3] - r[4] - r[0]);
+      t += dt; if (t >= next) { pts.push([t, tot()]); next = t + 0.1; }
+    }
+    return { est: true, pts };
+  }
+  const st = { v0: 1, phi: 0, runs: [] };
+  const v0I = document.getElementById("v0"), phiI = document.getElementById("phi");
+  const simulate = () => { st.runs = Array.from({ length: 30 }, () => runOne(st.v0, st.phi, 21)); drawSim(); };
+  v0I.oninput = () => { st.v0 = Math.round(Math.pow(10, +v0I.value)); simulate(); };
+  phiI.oninput = () => { st.phi = +phiI.value / 100; simulate(); };
+  document.getElementById("rerun").onclick = simulate;
+  function drawSim() {
+    document.getElementById("v0Out").textContent = st.v0; document.getElementById("phiOut").textContent = Math.round(st.phi * 100) + "%";
+    const est = st.runs.filter((r) => r.est).length, theory = 1 - Math.pow(qOf(st.phi), st.v0);
+    const ro = document.getElementById("simReadout"); ro.replaceChildren();
+    const add = (a, b) => { const s = document.createElement("span"); s.append(a + " "); const x = document.createElement("b"); x.textContent = b; s.append(x); ro.append(s); };
+    add("Established:", est + " of 30"); add("Exact probability:", pct(theory)); add("R₀:", R0(st.phi).toFixed(2));
+    const series = st.runs.map((r) => ({ color: r.est ? css("--s1") : css("--ink-3"), width: r.est ? 1.4 : 1.1, pts: r.pts.map(([t, v]) => [t, Math.max(v, 1)]), dots: r.est ? [] : [[r.tEx, 1]], noTip: true }));
+    series.sort((a, b) => (a.color === css("--s1")) - (b.color === css("--s1")));
+    const ext = st.runs.filter((r) => !r.est && r.tEx != null).map((r) => r.tEx).sort((a, b) => a - b);
+    if (ext.length) add("Median time to die out:", (ext[Math.floor(ext.length / 2)] * 24).toFixed(1) + " hours");
+    line(document.getElementById("simChart"), { height: 300, noHover: true, series,
+      x: { min: 0, max: 21, ticks: [0, 3, 6, 9, 12, 15, 18, 21], label: "Days after exposure" },
+      y: { min: 1, max: 2e5, log: true, ticks: [1, 10, 100, 1e3, 1e4, 1e5], fmt: (v) => (v === 1 ? "≤1" : sup(Math.round(Math.log10(v)))) }, aria: "Thirty simulated viral load trajectories" });
+    const lg = document.getElementById("simLegend"); lg.replaceChildren();
+    [["Established", css("--s1")], ["Died out (dot marks extinction)", css("--ink-3")]].forEach(([n, c]) => { const s = document.createElement("span"); const i = document.createElement("i"); i.style.background = c; s.append(i, n); lg.append(s); });
+  }
+
+  /* ---------- static figures ---------- */
+  const tbl = document.getElementById("checkTable");
+  tbl.innerHTML = "<thead><tr><th>Neutralization</th><th class='r'>Virions</th><th class='r'>Simulated</th><th class='r'>± 1 SE</th><th class='r'>Formula</th></tr></thead>";
+  const tb = document.createElement("tbody");
+  D.check.forEach((r) => { const tr = document.createElement("tr"); [pct(r.phi, 0), r.v0, pct(r.ssa, 2), pct(r.se, 2), pct(r.theory, 2)].forEach((v, i) => { const td = document.createElement("td"); if (i) td.className = "r"; td.textContent = v; tr.append(td); }); tb.append(tr); });
+  tbl.append(tb);
+  const cols = () => [css("--s1"), css("--s3"), css("--s2"), css("--ink-3")];
+  function legend(id, items) { const lg = document.getElementById(id); lg.replaceChildren(); items.forEach(([n, c, dash]) => { const s = document.createElement("span"); const i = document.createElement("i"); if (dash) { i.style.background = "transparent"; i.style.borderTop = "2px dashed " + c; i.style.height = "0"; } else i.style.background = c; s.append(i, n); lg.append(s); }); }
+  function drawStatic() {
+    const C = cols();
+    line(document.getElementById("doseChart"), { height: 300, direct: true,
+      series: D.dose.curves.map((cv, k) => ({ name: Math.round(cv.phi * 100) + "% blocked", color: C[k], pts: D.dose.v0.map((v, i) => [Math.log10(v), cv.p[i] * 100]), fmt: (v) => v.toFixed(1) + "%" })),
+      x: { min: 0, max: 3, ticks: [0, 1, 2, 3], fmt: (v) => String(Math.round(Math.pow(10, v))), label: "Virions reaching target cells (log scale)" },
+      y: { min: 0, max: 100, ticks: [0, 25, 50, 75, 100], fmt: (v) => v + "%" }, tipX: (x) => Math.round(Math.pow(10, x)) + " virions", aria: "Establishment probability by inoculum" });
+    legend("doseLegend", D.dose.curves.map((cv, k) => [Math.round(cv.phi * 100) + "% of infection events blocked (R₀ " + cv.r0.toFixed(1) + ")", C[k]]));
+    const thr = D.neut.threshold * 100;
+    line(document.getElementById("neutChart"), { height: 280,
+      series: [{ name: "Per-virion risk", color: C[0], pts: D.neut.phi.map((f, i) => [f * 100, D.neut.p1[i] * 100]), dots: [50, 80, 85].map((f) => [f, (1 - qOf(f / 100)) * 100]), fmt: (v) => v.toFixed(2) + "%" }],
+      vlines: [{ x: thr, label: "R₀ = 1 at " + thr.toFixed(1) + "%" }],
+      x: { min: 0, max: 95, ticks: [0, 20, 40, 60, 80, 95], fmt: (v) => v + "%", label: "Infection events blocked by antibody" },
+      y: { min: 0, max: 16, ticks: [0, 4, 8, 12, 16], fmt: (v) => v + "%" }, tipX: (x) => Math.round(x) + "% blocked", aria: "Per-virion establishment probability by neutralization" });
+    legend("neutLegend", [["Chance one virion starts an infection", C[0]]]);
+    const T = D.traj, pts = (a) => T.t.map((t, i) => [t, Math.max(a[i], 1)]);
+    line(document.getElementById("trajChart"), { height: 320,
+      areas: [{ lo: pts(T.q05), hi: pts(T.q95), fill: `color-mix(in srgb, ${C[0]} 14%, transparent)` }, { lo: pts(T.q25), hi: pts(T.q75), fill: `color-mix(in srgb, ${C[0]} 26%, transparent)` }],
+      series: [{ name: "Stochastic median", color: C[0], pts: pts(T.q50), fmt: (v) => Math.round(v).toLocaleString() }, { name: "Deterministic", color: css("--ink"), dash: "5 4", width: 1.6, pts: pts(T.ode), fmt: (v) => Math.round(v).toLocaleString() }],
+      vlines: [{ x: D.detect.median, label: "median detection " + D.detect.median + " d" }],
+      x: { min: 0, max: 30, ticks: [0, 5, 10, 15, 20, 25, 30], label: "Days after exposure" },
+      y: { min: 1, max: 1e5, log: true, ticks: [1, 10, 100, 1e3, 1e4, 1e5], fmt: (v) => (v === 1 ? "≤1" : sup(Math.round(Math.log10(v)))) },
+      tipX: (x) => "Day " + x.toFixed(1), aria: "Viral load quantiles over time" });
+    legend("trajLegend", [["Stochastic median", C[0]], ["Middle 50% / 90%", `color-mix(in srgb, ${C[0]} 30%, transparent)`], ["Deterministic (ODE)", css("--ink"), true]]);
+    document.querySelectorAll("#trajLegend i")[1].style.height = "10px";
+  }
+  simulate(); drawStatic();
+  Charts.onResize(() => { drawSim(); drawStatic(); }).observe(document.getElementById("simChart"));
+})();
+</script>
+</body></html>

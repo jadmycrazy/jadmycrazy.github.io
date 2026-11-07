@@ -64,8 +64,8 @@
   <section class="hero intro">
     <div class="eyebrow">Biomedical Engineering + Computer Science · Duke University</div>
     <h1>Jad Almajnouni</h1>
-    <p class="lead">I research vaccine immunology at the <a class="u" href="https://dhvi.duke.edu">Duke Human Vaccine Institute</a> and build optimization models for medicine at Duke.</p>
-    <p class="sub">At the Tomaras Lab I work with Dr. Georgia Tomaras's group on how protective immune responses form. At Duke I study Biomedical Engineering and Computer Science and work on optimization and mechanistic modeling for medicine: integer programming, Monte Carlo simulation, and differential-equation models of how drugs, pathogens, and the immune system interact. Earlier, I analyzed antibody responses in pancreatic cancer at the <a class="u" href="https://ragoninstitute.org">Ragon Institute</a> of Mass General Brigham, MIT, and Harvard, through MIT's Research Science Institute.</p>
+    <p class="lead">I research vaccine immunology at the <a class="u" href="https://dhvi.duke.edu">Duke Human Vaccine Institute</a> and build simulation and optimization models for medicine at Duke.</p>
+    <p class="sub">At the Tomaras Lab I work with Dr. Georgia Tomaras's group on how protective immune responses form. At Duke I study Biomedical Engineering and Computer Science and work on optimization and mechanistic modeling for medicine: stochastic differential equations, Monte Carlo simulation, and mechanistic models of how drugs, pathogens, and the immune system interact. Earlier, I analyzed antibody responses in pancreatic cancer at the <a class="u" href="https://ragoninstitute.org">Ragon Institute</a> of Mass General Brigham, MIT, and Harvard, through MIT's Research Science Institute.</p>
     <div class="links">
       <a class="btn primary" href="#projects">See projects <span class="arr" aria-hidden="true">↓</span></a>
       <a class="btn" href="https://www.linkedin.com/in/jad-almajnouni">LinkedIn <span class="arr" aria-hidden="true">↗</span></a>
@@ -77,13 +77,13 @@
   <section id="projects">
     <div class="sec-head"><h2>Projects</h2><span class="label">Optimization, simulation, medicine</span></div>
 
-    <a class="plate" href="kidney.html">
-      <div class="thumb"><div class="t">Share of pairs matched vs. pool size</div><div class="chart" id="t1"></div></div>
+    <a class="plate" href="virus.html">
+      <div class="thumb"><div class="t">Chance an exposure becomes an infection, by inoculum</div><div class="chart" id="t1"></div></div>
       <div class="text">
-        <div class="eyebrow">01 · Transplantation</div>
-        <h3>Kidney exchange: how many transplants is an optimizer worth?</h3>
-        <p>Simulates kidney paired-donation pools with the Saidman generator and chooses exchange cycles with an integer program. In pools of 100 pairs the optimizer matched 55% of patients against 43% for a first-come matcher, 30% more transplants with no new donors. Blood type O patients were matched at a third of the rate of type A.</p>
-        <div class="meta"><span><b>Methods</b> cycle-formulation MILP (HiGHS), DFS cycle search, Monte Carlo pools</span><span class="go">Read the write-up <span class="arr" aria-hidden="true">→</span></span></div>
+        <div class="eyebrow">01 · Virology</div>
+        <h3>Why most HIV exposures never become infections</h3>
+        <p>Simulates the first days of HIV infection with exact Gillespie simulation and stochastic differential equations. Even with R₀ = 8, a single virion starts an infection only 14.6% of the time, and an antibody that blocks 85% of infection events cuts that risk 18-fold. Infections that do take hold reach detectable levels earlier than the deterministic model predicts.</p>
+        <div class="meta"><span><b>Methods</b> Gillespie SSA, chemical Langevin SDE (Euler–Maruyama), branching processes</span><span class="go">Read the write-up <span class="arr" aria-hidden="true">→</span></span></div>
       </div>
     </a>
 
@@ -115,7 +115,7 @@
       <div class="xp-row"><div class="when num">Jun – Aug 2025</div><div><h3>Ragon Institute of Mass General Brigham, MIT, and Harvard</h3><div class="role">Research Intern, through MIT's Research Science Institute</div><p>Immunology research on pancreatic cancer. Analyzed antibody responses with systems serology and presented the findings at the RSI symposium at MIT.</p></div></div>
       <div class="xp-row"><div class="when num">2026 – 2030</div><div><h3>Duke University, Pratt School of Engineering</h3><div class="role">B.S.E. Biomedical Engineering and Computer Science</div></div></div>
       <div class="xp-row"><div class="when">Honors</div><div><h3>KAUST Gifted Student Program (KGSP) Scholar</h3><div class="role">2026 – present</div><h3 style="margin-top:14px">Research Science Institute (RSI) Scholar</h3><div class="role">2025 · one of 36 international students selected</div></div></div>
-      <div class="xp-row"><div class="when">Tools</div><div><p>Integer and constrained optimization (HiGHS), ODE simulation, Monte Carlo methods, systems serology data analysis. Python (NumPy, SciPy), R, JavaScript for interactive figures.</p></div></div>
+      <div class="xp-row"><div class="when">Tools</div><div><p>Stochastic simulation (Gillespie, Euler–Maruyama SDEs), ODE modeling, constrained optimization, Monte Carlo methods, systems serology data analysis. Python (NumPy, SciPy), R, JavaScript for interactive figures.</p></div></div>
     </div>
   </section>
 </main>
@@ -126,12 +126,12 @@
 <script>
 (async function () {
   const { line, css } = Charts;
-  const [K, A, R] = await Promise.all(["kidney", "antibiotic", "radiotherapy"].map((n) => fetch("data/" + n + ".json").then((r) => r.json())));
+  const [V, A, R] = await Promise.all(["viral", "antibiotic", "radiotherapy"].map((n) => fetch("data/" + n + ".json").then((r) => r.json())));
   function draw() {
     const small = { height: 170, margin: { t: 8, l: 40, b: 26 } };
     line(document.getElementById("t1"), Object.assign({}, small, { margin: { t: 8, l: 40, b: 26, r: 70 }, direct: true,
-      series: [["opt3", "Optimal", "--s1"], ["greedy3", "First-come", "--s2"]].map(([k, n, c]) => ({ name: n, color: css(c), pts: K.sizes.map((r) => [r.n, r[k] * 100]), fmt: (v) => v.toFixed(1) + "%" })),
-      x: { min: 0, max: 200, ticks: [0, 100, 200] }, y: { min: 0, max: 70, ticks: [0, 35, 70], fmt: (v) => v + "%" }, tipX: (x) => Math.round(x) + " pairs" }));
+      series: [[0, "No antibody", "--s1"], [3, "85% blocked", "--s2"]].map(([k, n, c]) => ({ name: n, color: css(c), pts: V.dose.v0.map((v, i) => [Math.log10(v), V.dose.curves[k].p[i] * 100]), fmt: (v) => v.toFixed(1) + "%" })),
+      x: { min: 0, max: 3, ticks: [0, 1, 2, 3], fmt: (v) => String(Math.round(Math.pow(10, v))) }, y: { min: 0, max: 100, ticks: [0, 50, 100], fmt: (v) => v + "%" }, tipX: (x) => Math.round(Math.pow(10, x)) + " virions" }));
     line(document.getElementById("t2"), Object.assign({}, small, {
       series: [{ name: "Total drug", color: css("--s1"), pts: A.sweep.map((s) => [s.frac * 100, s.total]), dots: A.sweep.map((s) => [s.frac * 100, s.total]), fmt: (v) => v.toLocaleString() + " mg" }],
       x: { min: 0, max: 100, ticks: [0, 50, 100], fmt: (v) => v + "%" }, y: { min: 0, max: 12000, ticks: [0, 6000, 12000], fmt: (v) => v / 1000 + "k" }, tipX: (x) => Math.round(x / 20) * 20 + "% immune" }));

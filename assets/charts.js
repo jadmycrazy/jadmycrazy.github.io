@@ -54,6 +54,11 @@
       const r = el("rect", { x: m.l, width: W - m.l - m.r, y: sy(b.y1), height: Math.max(0, sy(b.y0) - sy(b.y1)), fill: b.fill, class: "fade" }, svg);
       if (b.label) txt(svg, m.l + 8, sy(b.y1) + 14, b.label, { "font-size": 10.5, fill: css("--ink-2") });
     });
+    (opts.areas || []).forEach((ar) => {
+      const top = ar.hi.map((p, i) => (i ? "L" : "M") + sx(p[0]).toFixed(1) + " " + sy(p[1]).toFixed(1)).join("");
+      const bot = ar.lo.slice().reverse().map((p) => "L" + sx(p[0]).toFixed(1) + " " + sy(p[1]).toFixed(1)).join("");
+      el("path", { d: top + bot + "Z", fill: ar.fill, stroke: "none", class: "fade" }, svg);
+    });
     const yt = Y.ticks || niceTicks(Y.min, Y.max, 5);
     yt.forEach((v) => {
       el("line", { x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v), class: "gridline" }, svg);
@@ -78,6 +83,7 @@
     lab.sort((a, b) => a.y - b.y);
     for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 14) lab[i].y = lab[i - 1].y + 14;
     lab.forEach((l) => txt(svg, l.x + 8, l.y + 4, l.s.name, { class: "direct fade" }));
+    if (opts.noHover) return { svg, sx, sy };
     // hover
     const cross = el("line", { y1: m.t, y2: H - m.b, stroke: css("--ink-3"), "stroke-width": 1, visibility: "hidden" }, svg);
     const dots = opts.series.map((s) => el("circle", { r: 4.5, fill: s.color, stroke: css("--paper"), "stroke-width": 2, visibility: "hidden" }, svg));
