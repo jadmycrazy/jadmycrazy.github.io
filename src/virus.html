@@ -4,11 +4,14 @@
 </head><body>
 {{BAR}}
 <main class="wrap article-body" data-life="article">
-  <header class="article-head intro">
+  <header class="article-head intro has-scene">
+    <div class="head-text">
     <div class="eyebrow">Project 01 · Stochastic simulation · Virology</div>
     <h1>Why most HIV exposures never become infections</h1>
     <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/stochastic-viral-dynamics">Code on GitHub</a></span></div>
     <p class="dek">A deterministic model says any virus with a reproduction number above one always takes off. Real infections start from a handful of virions, where chance decides. I simulated the first days of HIV infection with exact stochastic simulation and stochastic differential equations to measure how often an exposure dies out, and how much a neutralizing antibody lowers the odds.</p>
+    </div>
+    <div class="head-scene"><div class="scene-box" id="headScene" data-aria="Animated illustration of the model"></div><div class="cap">Each exposure starts with one virion. Cleared virions leave an ×; infected cells pass the eclipse phase (dashed), then release a burst. About 15% of exposures take hold.</div></div>
   </header>
 
   <section class="findings" aria-label="Key results">
@@ -127,12 +130,14 @@ target cells  ∅ → T,  T → ∅      rate λ,  d_T·T</div>
 </main>
 {{FOOT}}
 <script src="assets/charts.js"></script>
+<script src="assets/scenes.js"></script>
 <script src="assets/life.js"></script>
 <script src="assets/site.js"></script>
 <script>
 (async function () {
   const { line, css } = Charts;
   const D = await (await fetch("data/viral.json")).json();
+  Scenes.mount(document.getElementById("headScene"), "virus", D);
   const P = D.params;
   const sup = (e) => "10" + String(e).split("").map((c) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[+c]).join("");
   const pct = (v, d = 1) => (v * 100).toFixed(d) + "%";

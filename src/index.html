@@ -27,9 +27,9 @@
   .plate + .plate { margin-top: 4px; }
   .plate::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; opacity: 0; transition: opacity 250ms; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 9%, transparent), transparent 65%), color-mix(in srgb, var(--paper) 70%, transparent); box-shadow: inset 0 0 0 1px var(--rule); }
   .plate:hover::before, .plate:focus-visible::before { opacity: 1; }
-  .plate .thumb { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 10px 4px; min-width: 0; transition: border-color 200ms, transform 300ms var(--ease-out); }
+  .plate .thumb { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 12px 6px; min-width: 0; transition: border-color 200ms, transform 300ms var(--ease-out); }
   .plate:hover .thumb { border-color: var(--ink-3); transform: translateY(-2px); }
-  .plate .thumb .t { font-family: var(--font-display); font-size: 0.72rem; color: var(--ink-3); margin: 0 4px 2px; }
+  .plate .thumb .t { font-family: var(--font-display); font-size: 0.74rem; line-height: 1.4; color: var(--ink-3); margin: 6px 4px 4px; }
   .plate h3 { font-size: 1.35rem; font-stretch: 108%; margin: 6px 0 10px; line-height: 1.2; }
   .plate p { color: var(--ink-2); margin-bottom: 12px; }
   .plate .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--font-display); font-size: 0.82rem; color: var(--ink-3); align-items: center; }
@@ -78,7 +78,7 @@
     <div class="sec-head"><h2>Projects</h2><span class="label">Optimization, simulation, medicine</span></div>
 
     <a class="plate" href="virus.html">
-      <div class="thumb"><div class="t">Chance an exposure becomes an infection, by inoculum</div><div class="chart" id="t1"></div></div>
+      <div class="thumb"><div class="scene-box" id="t1" data-aria="Animated illustration of the model"></div><div class="t">Virions reach target cells one at a time. Most are cleared; occasionally a lineage takes hold.</div></div>
       <div class="text">
         <div class="eyebrow">01 · Virology</div>
         <h3>Why most HIV exposures never become infections</h3>
@@ -88,7 +88,7 @@
     </a>
 
     <a class="plate" href="antibiotic.html">
-      <div class="thumb"><div class="t">Least drug that clears infection vs. immune strength</div><div class="chart" id="t2"></div></div>
+      <div class="thumb"><div class="scene-box" id="t2" data-aria="Animated illustration of the model"></div><div class="t">A week of dosing replayed from the model: the right dose clears, a low dose breeds resistance.</div></div>
       <div class="text">
         <div class="eyebrow">02 · Infectious disease</div>
         <h3>Dosing antibiotics with the immune system in the loop</h3>
@@ -98,7 +98,7 @@
     </a>
 
     <a class="plate" href="radiotherapy.html">
-      <div class="thumb"><div class="t">Head and neck: tumor BED vs. number of fractions</div><div class="chart" id="t3"></div></div>
+      <div class="thumb"><div class="scene-box" id="t3" data-aria="Animated illustration of the model"></div><div class="t">One beam per fraction. Six large fractions give the tumor more dose at the same healthy-tissue limit.</div></div>
       <div class="text">
         <div class="eyebrow">03 · Radiation oncology</div>
         <h3>How many fractions? Choosing a radiotherapy schedule with the linear-quadratic model</h3>
@@ -121,27 +121,17 @@
 </main>
 {{FOOT}}
 <script src="assets/charts.js"></script>
+<script src="assets/scenes.js"></script>
 <script src="assets/life.js"></script>
 <script src="assets/site.js"></script>
 <script>
 (async function () {
   const { line, css } = Charts;
   const [V, A, R] = await Promise.all(["viral", "antibiotic", "radiotherapy"].map((n) => fetch("data/" + n + ".json").then((r) => r.json())));
-  function draw() {
-    const small = { height: 170, margin: { t: 8, l: 40, b: 26 } };
-    line(document.getElementById("t1"), Object.assign({}, small, { margin: { t: 8, l: 40, b: 26, r: 70 }, direct: true,
-      series: [[0, "No antibody", "--s1"], [3, "85% blocked", "--s2"]].map(([k, n, c]) => ({ name: n, color: css(c), pts: V.dose.v0.map((v, i) => [Math.log10(v), V.dose.curves[k].p[i] * 100]), fmt: (v) => v.toFixed(1) + "%" })),
-      x: { min: 0, max: 3, ticks: [0, 1, 2, 3], fmt: (v) => String(Math.round(Math.pow(10, v))) }, y: { min: 0, max: 100, ticks: [0, 50, 100], fmt: (v) => v + "%" }, tipX: (x) => Math.round(Math.pow(10, x)) + " virions" }));
-    line(document.getElementById("t2"), Object.assign({}, small, {
-      series: [{ name: "Total drug", color: css("--s1"), pts: A.sweep.map((s) => [s.frac * 100, s.total]), dots: A.sweep.map((s) => [s.frac * 100, s.total]), fmt: (v) => v.toLocaleString() + " mg" }],
-      x: { min: 0, max: 100, ticks: [0, 50, 100], fmt: (v) => v + "%" }, y: { min: 0, max: 12000, ticks: [0, 6000, 12000], fmt: (v) => v / 1000 + "k" }, tipX: (x) => Math.round(x / 20) * 20 + "% immune" }));
-    const hn = R.sites.find((s) => s.site.startsWith("Head"));
-    line(document.getElementById("t3"), Object.assign({}, small, {
-      series: [{ name: "Tumor BED", color: css("--s1"), pts: hn.curve.filter((c) => c.ok).map((c) => [c.n, c.bed]), dots: [[hn.best.n, hn.best.bed]], fmt: (v) => v.toFixed(1) + " Gy" }],
-      x: { min: 1, max: 40, ticks: [1, 16, 40] }, y: { min: 60, max: 90, ticks: [60, 75, 90] }, tipX: (x) => Math.round(x) + " fractions" }));
-  }
-  draw(); Charts.rerenderOnTheme(draw);
-  Charts.onResize(draw).observe(document.getElementById("t1"));
+  Scenes.mount(document.getElementById("t1"), "virus", V);
+  Scenes.mount(document.getElementById("t2"), "antibiotic", A);
+  Scenes.mount(document.getElementById("t3"), "radio", R);
+
 })();
 </script>
 </body></html>

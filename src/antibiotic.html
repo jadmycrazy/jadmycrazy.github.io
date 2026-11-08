@@ -4,11 +4,14 @@
 </head><body>
 {{BAR}}
 <main class="wrap article-body" data-life="article">
-  <header class="article-head intro">
+  <header class="article-head intro has-scene">
+    <div class="head-text">
     <div class="eyebrow">Project 02 · Simulation · Infectious disease</div>
     <h1>Dosing antibiotics with the immune system in the loop</h1>
     <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/antibiotic-immune-dosing">Code on GitHub</a></span><span>Python · ODE modeling</span></div>
     <p class="dek">Most dosing models treat the drug as the only thing killing bacteria. I added a simple innate immune response and a resistant subpopulation, then searched 1,000 regimens for the least drug that clears the infection without letting resistance take hold.</p>
+    </div>
+    <div class="head-scene"><div class="scene-box" id="headScene" data-aria="Animated illustration of the model"></div><div class="cap">A week of treatment replayed from the model. The curve is drug concentration; below, sensitive (blue) and resistant (orange) bacteria, with immune cells that engage once the population is small.</div></div>
   </header>
 
   <section class="findings" aria-label="Key results">
@@ -100,12 +103,14 @@ C(t)  = Σ_doses (dose/V)·exp(−k_e (t − t_i))     half-life 2 h, V = 20 L</
 </main>
 {{FOOT}}
 <script src="assets/charts.js"></script>
+<script src="assets/scenes.js"></script>
 <script src="assets/life.js"></script>
 <script src="assets/site.js"></script>
 <script>
 (async function () {
   const { line, grid, hbars, css } = Charts;
   const D = await (await fetch("data/antibiotic.json")).json();
+  Scenes.mount(document.getElementById("headScene"), "antibiotic", D);
   const P = D.P;
   const MIC_S = P.ec50S * Math.sqrt(P.kg / (P.Emax - P.kg));
   const MIC_R = P.ec50R * Math.sqrt((P.kg * (1 - P.cost)) / (P.Emax - P.kg * (1 - P.cost)));

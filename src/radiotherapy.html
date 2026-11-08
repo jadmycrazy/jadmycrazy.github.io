@@ -4,11 +4,14 @@
 </head><body>
 {{BAR}}
 <main class="wrap article-body" data-life="article">
-  <header class="article-head intro">
+  <header class="article-head intro has-scene">
+    <div class="head-text">
     <div class="eyebrow">Project 03 · Optimization · Radiation oncology</div>
     <h1>How many fractions? Choosing a radiotherapy schedule with the linear-quadratic model</h1>
     <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/radiotherapy-fractionation">Code on GitHub</a></span><span>Python · LQ model</span></div>
     <p class="dek">Radiation is split into daily fractions so healthy tissue can repair between doses. I wrote an optimizer that, for a fixed limit on late damage to healthy tissue, finds the number of fractions that delivers the most effective dose to the tumor. It recovers the direction of three recent shifts in clinical practice.</p>
+    </div>
+    <div class="head-scene"><div class="scene-box" id="headScene" data-aria="Animated illustration of the model"></div><div class="cap">Prostate schedules from the optimizer. Both reach the same healthy-tissue limit; six large fractions give the tumor more effective dose than thirty-five small ones.</div></div>
   </header>
 
   <section class="findings" aria-label="Key results">
@@ -102,12 +105,14 @@ subject to  healthy BED ≤ 116.7 Gy₃   (35 × 2 Gy with s = 1)
 </main>
 {{FOOT}}
 <script src="assets/charts.js"></script>
+<script src="assets/scenes.js"></script>
 <script src="assets/life.js"></script>
 <script src="assets/site.js"></script>
 <script>
 (async function () {
   const { line, grid, css, el } = Charts;
   const D = await (await fetch("data/radiotherapy.json")).json();
+  Scenes.mount(document.getElementById("headScene"), "radio", D);
   const ABN = 3, LIM = D.ref_bed_n, DMAX = 8;
   const days = (n) => (n <= 1 ? 0 : Math.floor((n - 1) / 5) * 7 + ((n - 1) % 5));
   const dpf = (n, s) => { const a = n / ABN, b = n, c = -LIM; return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a) / s; };

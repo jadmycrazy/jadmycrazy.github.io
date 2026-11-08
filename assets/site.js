@@ -52,7 +52,7 @@
   onScroll();
 
   /* ---------- figures draw themselves in when they scroll into view ---------- */
-  const hosts = [...document.querySelectorAll(".chart, .reveal")];
+  const hosts = [...document.querySelectorAll(".chart, .reveal, .scene-box")];
   if (!reduce.matches && "IntersectionObserver" in window) {
     const io = new IntersectionObserver((es) => es.forEach((e) => {
       if (e.isIntersecting) { requestAnimationFrame(() => requestAnimationFrame(() => e.target.classList.remove("armed"))); io.unobserve(e.target); }
