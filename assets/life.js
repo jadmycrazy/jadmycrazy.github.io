@@ -49,7 +49,7 @@
     const cs = getComputedStyle(document.documentElement);
     const g = (v, d) => (cs.getPropertyValue(v).trim() || d);
     colInk = g("--life-ink", colInk); colNew = g("--life-new", colNew);
-    const narrow = innerWidth < 760 ? 0.6 : 1;
+    const narrow = innerWidth < 760 ? 0.45 : 1;
     inkMax = parseFloat(g("--life-ink-a", "0.12")) * (HOME ? 1 : 0.6) * narrow;
     newMax = parseFloat(g("--life-new-a", "0.5")) * (HOME ? 1 : 0.6) * narrow;
   }
@@ -221,7 +221,7 @@
   });
   if (stat) {
     const btn = stat.querySelector("button");
-    const sync = () => { btn.textContent = running && !reduce.matches ? "Pause" : "Play"; btn.setAttribute("aria-pressed", String(!running)); };
+    const sync = () => { btn.textContent = reduce.matches ? "Paused" : running ? "Pause" : "Play"; btn.setAttribute("aria-pressed", String(!running)); };
     btn.addEventListener("click", () => { if (reduce.matches) return; running = !running; sync(); loop(); });
     if (reduce.matches) { btn.disabled = true; btn.title = "Paused because your system asks for reduced motion"; }
     sync();

@@ -8,7 +8,7 @@
     <div class="head-text">
     <div class="eyebrow">Project 01 · Stochastic simulation · Virology</div>
     <h1>Why most HIV exposures never become infections</h1>
-    <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/stochastic-viral-dynamics">Code on GitHub</a></span></div>
+    <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/stochastic-viral-dynamics">Code on GitHub</a></span><span>Python · Gillespie, SDEs</span></div>
     <p class="dek">A deterministic model says any virus with a reproduction number above one always takes off. Real infections start from a handful of virions, where chance decides. I simulated the first days of HIV infection with exact stochastic simulation and stochastic differential equations to measure how often an exposure dies out, and how much a neutralizing antibody lowers the odds.</p>
     </div>
     <div class="head-scene"><div class="scene-box" id="headScene" data-aria="Animated illustration of the model"></div><div class="cap">Each exposure starts with one virion. Cleared virions leave an ×; infected cells pass the eclipse phase (dashed), then release a burst. About 15% of exposures take hold.</div></div>
@@ -219,7 +219,7 @@ target cells  ∅ → T,  T → ∅      rate λ,  d_T·T</div>
       series: [{ name: "Stochastic median", color: C[0], pts: pts(T.q50), fmt: (v) => Math.round(v).toLocaleString() }, { name: "Deterministic", color: css("--ink"), dash: "5 4", width: 1.6, pts: pts(T.ode), fmt: (v) => Math.round(v).toLocaleString() }],
       vlines: [{ x: D.detect.median, label: "median detection " + D.detect.median + " d" }],
       x: { min: 0, max: 30, ticks: [0, 5, 10, 15, 20, 25, 30], label: "Days after exposure" },
-      y: { min: 1, max: 1e5, log: true, ticks: [1, 10, 100, 1e3, 1e4, 1e5], fmt: (v) => (v === 1 ? "≤1" : sup(Math.round(Math.log10(v)))) },
+      y: { min: 1, max: 1e5, log: true, ticks: [1, 10, 100, 1e3, 1e4, 1e5], fmt: (v) => (v === 1 ? "≤1" : sup(Math.round(Math.log10(v)))), label: "Infectious virions / mL" },
       tipX: (x) => "Day " + x.toFixed(1), aria: "Viral load quantiles over time" });
     legend("trajLegend", [["Stochastic median", C[0]], ["Middle 50% / 90%", `color-mix(in srgb, ${C[0]} 30%, transparent)`], ["Deterministic (ODE)", css("--ink"), true]]);
     document.querySelectorAll("#trajLegend i")[1].style.height = "10px";

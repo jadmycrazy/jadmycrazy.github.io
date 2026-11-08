@@ -162,7 +162,7 @@
     // dish
     el("ellipse", { cx: 89, cy: 76, rx: 67, ry: 20, fill: "none", stroke: "currentColor", "stroke-opacity": 0.22, "stroke-width": 0.8, class: "fade" }, svg);
     const r = rng(5), slots = [];
-    while (slots.length < 60) { const a = r() * Math.PI * 2, d = Math.sqrt(r()); const x = 89 + Math.cos(a) * d * 62, y = 76 + Math.sin(a) * d * 16.5; if (!slots.some((s) => Math.hypot(s[0] - x, s[1] - y) < 4.2)) slots.push([x, y]); }
+    for (let tries = 0; slots.length < 60 && tries < 20000; tries++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()); const x = 89 + Math.cos(a) * d * 62, y = 76 + Math.sin(a) * d * 16.5; if (!slots.some((s) => Math.hypot(s[0] - x, s[1] - y) < 4.2)) slots.push([x, y]); }
     const bugs = slots.map(([x, y], i) => delay(el("rect", { x: x - 1.9, y: y - 1.1, width: 3.8, height: 2.2, rx: 1.1, fill: s1, opacity: 0, transform: `rotate(${Math.round(r() * 180)} ${x.toFixed(1)} ${y.toFixed(1)})`, class: "bug" }, svg), i * 8));
     const immune = [[40, 70], [120, 84], [100, 64]].map(([x, y]) => ({ x, y, vx: 0, vy: 0, c: el("circle", { cx: x, cy: y, r: 3.6, fill: "none", stroke: accent, "stroke-width": 0.9, "stroke-opacity": 0.5, class: "pop" }, svg) }));
     const tName = label(svg, 6, 9, "start", ""), tDay = label(svg, 156, 9, "end", "day 0.0");
@@ -206,7 +206,7 @@
       });
       if (k >= g.tr.length - 1) { tOut.textContent = g.out; tOut.setAttribute("fill", which ? s2 : accent); hold = now + 2000; }
     }
-    function still() { show(regimens[0], Math.round(regimens[0].tr.length * 0.25)); }
+    function still() { load(regimens[1]); show(regimens[1], regimens[1].tr.length - 1); tOut.textContent = regimens[1].out; tOut.setAttribute("fill", s2); }
     return { step, still };
   }
 
@@ -223,16 +223,16 @@
       { n: 35, d: at(35).d, bed: at(35).bed, name: "35 fractions", pulse: 120 },
       { n: pro.best.n, d: pro.best.d, bed: pro.best.bed, name: pro.best.n + " fractions", pulse: 700 },
     ];
-    const CX = 52, CY = 54;
-    el("ellipse", { cx: CX, cy: CY, rx: 40, ry: 31, fill: "currentColor", "fill-opacity": 0.035, stroke: "currentColor", "stroke-opacity": 0.35, "stroke-width": 0.9, class: "fade" }, svg);
-    const oar = el("ellipse", { cx: CX, cy: CY + 17, rx: 9, ry: 5, fill: s1, "fill-opacity": 0.12, stroke: s1, "stroke-opacity": 0.6, "stroke-width": 0.8, class: "pop" }, svg);
-    label(svg, CX + 12, CY + 26, "start", "healthy", { "font-size": 5, "fill-opacity": 0.6 });
-    const tumor = el("circle", { cx: CX, cy: CY - 2, r: 10, fill: accent, "fill-opacity": 0.08, stroke: accent, "stroke-width": 1, class: "pop" }, svg);
-    label(svg, CX - 12, CY - 14, "end", "tumor", { "font-size": 5, "fill-opacity": 0.6 });
+    const CX = 58, CY = 62;
+    el("ellipse", { cx: CX, cy: CY, rx: 33, ry: 25, fill: "currentColor", "fill-opacity": 0.035, stroke: "currentColor", "stroke-opacity": 0.35, "stroke-width": 0.9, class: "fade" }, svg);
+    const oar = el("ellipse", { cx: CX, cy: CY + 14, rx: 8, ry: 4.5, fill: s1, "fill-opacity": 0.12, stroke: s1, "stroke-opacity": 0.6, "stroke-width": 0.8, class: "pop" }, svg);
+    label(svg, CX + 10, CY + 22, "start", "healthy", { "font-size": 5, "fill-opacity": 0.6 });
+    const tumor = el("circle", { cx: CX, cy: CY - 2, r: 9, fill: accent, "fill-opacity": 0.08, stroke: accent, "stroke-width": 1, class: "pop" }, svg);
+    label(svg, CX - 11, CY - 12, "end", "tumor", { "font-size": 5, "fill-opacity": 0.6 });
     const r = rng(3), cellsT = [];
-    while (cellsT.length < 14) { const a = r() * Math.PI * 2, d = Math.sqrt(r()) * 7.2; const x = CX + Math.cos(a) * d, y = CY - 2 + Math.sin(a) * d; if (!cellsT.some((c) => Math.hypot(c[0] - x, c[1] - y) < 3)) cellsT.push([x, y]); }
+    for (let tries = 0; cellsT.length < 14 && tries < 4000; tries++) { const a = r() * Math.PI * 2, d = Math.sqrt(r()) * 6.4; const x = CX + Math.cos(a) * d, y = CY - 2 + Math.sin(a) * d; if (!cellsT.some((c) => Math.hypot(c[0] - x, c[1] - y) < 2.5)) cellsT.push([x, y]); }
     const tdots = cellsT.map(([x, y], i) => delay(el("circle", { cx: x, cy: y, r: 1.1, fill: accent, class: "pop" }, svg), 250 + i * 25));
-    const orbit = 46;
+    const orbit = 38;
     el("circle", { cx: CX, cy: CY - 2, r: orbit, fill: "none", stroke: "currentColor", "stroke-opacity": 0.12, "stroke-dasharray": "1.5 2.5", "stroke-width": 0.7, class: "fade" }, svg);
     const beams = el("g", {}, svg);
     const beam = el("path", { d: "", fill: accent, "fill-opacity": 0 }, beams);
@@ -251,7 +251,7 @@
     const valT = label(svg, BX[0] + 6, BY0 - 2, "middle", "", { "font-size": 4.6, fill: paper });
     label(svg, 129, 15, "middle", "BED, Gy", { "font-size": 5, "fill-opacity": 0.6 });
     const tName = label(svg, 6, 9, "start", ""), tFx = label(svg, 6, 17, "start", "");
-    let which = 0, start = 0, ang = -Math.PI / 2, last = 0, hold = 0, fired = 0, flashT = 0;
+    let which = 0, start = 0, ang = -0.5, last = 0, hold = 0, fired = 0, flashT = 0;
     function setPlan(p) { tName.textContent = `${p.name} × ${p.d.toFixed(2)} Gy`; fired = 0; tFx.textContent = `fraction 0/${p.n}`; bars.forEach((b) => { b.setAttribute("y", BY0); b.setAttribute("height", 0); }); tdots.forEach((d) => d.setAttribute("opacity", 1)); valT.textContent = ""; }
     function render(p, frac) {
       const tb = p.bed * frac, hb = lim * frac;

@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&display=swap">
 <link rel="stylesheet" href="assets/site.css">
 
-<meta name="description" content="A pharmacokinetic and immune model that searches 1,000 antibiotic regimens for the least drug that clears an infection without selecting resistance.">
+<meta name="description" content="A pharmacokinetic and immune model that searches 500 antibiotic regimens for the least drug that clears an infection without selecting resistance.">
 </head><body>
 <canvas id="life" aria-hidden="true"></canvas>
 <header class="bar"><div class="wrap">
@@ -24,7 +24,7 @@
     <div class="eyebrow">Project 02 · Simulation · Infectious disease</div>
     <h1>Dosing antibiotics with the immune system in the loop</h1>
     <div class="byline"><span>Jad Almajnouni</span><span>Independent project, 2026</span><span><a href="https://github.com/jadmycrazy/antibiotic-immune-dosing">Code on GitHub</a></span><span>Python · ODE modeling</span></div>
-    <p class="dek">Most dosing models treat the drug as the only thing killing bacteria. I added a simple innate immune response and a resistant subpopulation, then searched 1,000 regimens for the least drug that clears the infection without letting resistance take hold.</p>
+    <p class="dek">Most dosing models treat the drug as the only thing killing bacteria. I added a simple innate immune response and a resistant subpopulation, then searched 500 dosing regimens for the least drug that clears the infection without letting resistance take hold.</p>
     </div>
     <div class="head-scene"><div class="scene-box" id="headScene" data-aria="Animated illustration of the model"></div><div class="cap">A week of treatment replayed from the model. The curve is drug concentration; below, sensitive (blue) and resistant (orange) bacteria, with immune cells that engage once the population is small.</div></div>
   </header>
@@ -104,7 +104,7 @@ C(t)  = Σ_doses (dose/V)·exp(−k_e (t − t_i))     half-life 2 h, V = 20 L</
     </ul>
 
     <h2>Code</h2>
-    <p>Repository: <a href="https://github.com/jadmycrazy/antibiotic-immune-dosing">github.com/jadmycrazy/antibiotic-immune-dosing</a>. The model, regimen search and immune sweep are in <code>antibiotic_dosing.py</code>. The browser simulator in Figure 1 is a line-by-line port of the same integrator.</p>
+    <p>Repository: <a href="https://github.com/jadmycrazy/antibiotic-immune-dosing">github.com/jadmycrazy/antibiotic-immune-dosing</a>. The model and integrator are in <code>model.py</code>; the regimen search and immune sweep are in <code>run_search.py</code>. The browser simulator in Figure 1 is a line-by-line port of the same integrator.</p>
 
     <h2>References</h2>
     <ol class="refs">
@@ -164,7 +164,8 @@ C(t)  = Σ_doses (dose/V)·exp(−k_e (t − t_i))     half-life 2 h, V = 20 L</
     const map = { cleared: ["ok", "✓ Cleared, no resistant growth"], "cleared-risky": ["warn", "! Cleared, but resistant cells expanded"], resistant: ["bad", "✕ Resistant strain took over"], persistent: ["warn", "! Infection persists"] };
     pill.classList.add(map[r.outcome][0]); pill.textContent = map[r.outcome][1]; box.append(pill);
     const sp = (a, b) => { const s = document.createElement("span"); s.append(a + " "); const x = document.createElement("b"); x.textContent = b; s.append(x); box.append(s); };
-    sp("Total drug:", r.total.toLocaleString() + " mg over 7 days"); sp("Peak resistant cells:", r.Rmax < 1 ? "0" : Math.round(r.Rmax).toExponential(1).replace("e+", " × 10^"));
+    sp("Total drug:", r.total.toLocaleString() + " mg over 7 days"); const ex = r.Rmax < 1 ? null : Math.floor(Math.log10(r.Rmax));
+    sp("Peak resistant cells:", ex === null ? "0" : ex < 3 ? Math.round(r.Rmax).toLocaleString() : (r.Rmax / Math.pow(10, ex)).toFixed(1) + " × " + sup(ex));
     line(document.getElementById("concChart"), { height: 190, series: [{ name: "Concentration", color: css("--ink"), width: 1.6, pts: r.tr.C, fmt: (v) => v.toFixed(2) + " mg/L" }],
       bands: [{ y0: MIC_S, y1: MIC_R, fill: css("--accent-wash"), label: "Mutant selection window" }],
       x: { min: 0, max: 7, ticks: [0, 1, 2, 3, 4, 5, 6, 7], fmt: (v) => "Day " + v }, y: { min: 0.1, max: 200, log: true, ticks: [0.1, 1, 10, 100], fmt: (v) => String(v) },
