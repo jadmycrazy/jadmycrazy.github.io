@@ -6,6 +6,6 @@ Source for my personal site: three project write-ups with interactive figures, b
 - `assets/` stylesheet, chart helpers, Game of Life background, page motion
 - `data/` figure data exported by the project repos
 
-Build with `python build.py`, then copy `netlify/*.html` to the repo root. GitHub Pages serves the root at https://jadmycrazy.github.io.
+Build with `python build.py`. It writes the pages to the repo root, where GitHub Pages serves them at https://jadmycrazy.github.io. Fonts are served from `assets/fonts` under the SIL Open Font License.
 
 Projects: [stochastic-viral-dynamics](https://github.com/jadmycrazy/stochastic-viral-dynamics) · [antibiotic-immune-dosing](https://github.com/jadmycrazy/antibiotic-immune-dosing) · [radiotherapy-fractionation](https://github.com/jadmycrazy/radiotherapy-fractionation)
