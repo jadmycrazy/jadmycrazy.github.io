@@ -5,6 +5,7 @@
 <meta property="og:site_name" content="Jad Almajnouni">
 <meta property="og:title" content="Why most HIV exposures never become infections">
 <meta property="og:description" content="Gillespie simulation and stochastic differential equations for the first days of HIV infection. A single virion starts an infection only 14.6% of the time, and a partial antibody cuts that risk up to 18-fold.">
+<link rel="canonical" href="https://jadmycrazy.github.io/virus.html">
 <meta property="og:url" content="https://jadmycrazy.github.io/virus.html">
 <meta property="og:image" content="https://jadmycrazy.github.io/assets/og/virus-2x.png">
 <meta property="og:image:width" content="2400">
@@ -12,7 +13,7 @@
 <meta name="twitter:card" content="summary_large_image">
 </head><body>
 {{BAR}}
-<main class="wrap article-body" data-life="article">
+<main id="main" class="wrap article-body" data-life="article">
   <header class="article-head intro has-scene">
     <div class="head-text">
     <div class="eyebrow">Project 01 · Stochastic simulation · Virology</div>
@@ -121,7 +122,7 @@ target cells  ∅ → T,  T → ∅      rate λ,  d_T·T</div>
     </ul>
 
     <h2>Code</h2>
-    <p>Repository: <a href="https://github.com/jadmycrazy/stochastic-viral-dynamics">github.com/jadmycrazy/stochastic-viral-dynamics</a>. The model, Gillespie simulator, branching-process solution and vectorized Euler–Maruyama integrator are in <code>viral/model.py</code>; <code>run_experiments.py</code> produces every number on this page in about 40 seconds. Tests check the simulator against the formula.</p>
+    <p>Repository: <a href="https://github.com/jadmycrazy/stochastic-viral-dynamics">github.com/jadmycrazy/stochastic-viral-dynamics</a>. The code is a small Python package. <code>viral/theory.py</code> holds the branching-process solution, <code>viral/gillespie.py</code> the exact simulator, <code>viral/langevin.py</code> the vectorized Euler–Maruyama integrator, and <code>viral/experiments.py</code> every experiment on this page. Running <code>viral-dynamics experiments</code> reproduces every number here from a fixed seed in about 30 seconds. Tests check the simulator against the formula on every push.</p>
 
     <h2>References</h2>
     <ol class="refs">
